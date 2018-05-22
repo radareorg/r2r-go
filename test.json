@@ -1,1 +1,169 @@
-[{"name":"avr DISasm: [0e940b10 =\u003e 0x00002016] (ANAL)","file":"malloc://4096","commands":["","e asm.arch=avr","wx 0e940b10 @ 0x2d0","s 0x2d0","ao 1~jump[1]","",""],"expected":"0x00002016\n\n","broken":false},{"name":"avr DISasm: [0e940b10 =\u003e call] - jump check","file":"malloc://4096","commands":["","e asm.arch=avr","s 0x2d0","wx 0e940b10","ao 1~jump","",""],"expected":"jump: 0x00002016\n\n","broken":false},{"name":"avr DISasm: [sts] - jump check","file":"malloc://4096","commands":["","e asm.arch=avr","s 0x2d0","wx 9093c007","ao 1~jump","",""],"expected":"\n","broken":false},{"name":"avr DISasm: negative baddr","file":"../../bins/elf/analysis/bugurtos-avr.elf","commands":["s 0x506","pd 2~!1","s+2","pd 1","",""],"expected":"call 0x18CE\ncall 0x18CE\n\n","broken":true},{"name":"avr DISasm: opcode size","file":"-","commands":["e asm.arch=avr","wx 0e941122","ao~size[1]","",""],"expected":"4\n\n","broken":false},{"name":"avr DISasm: IO-Ports","file":"../bins/firmware/arduino_avr.bin","commands":["","pd 1 @ 0x00000170~?IO","",""],"expected":"1\n\n","broken":false},{"name":"avr br - forward branch","file":"malloc://1024","commands":["","wx 61f0 @ 0x136","e asm.arch=avr","e asm.cpu=ATmega8","pi 1 @ 0x136","ao 1 @ 0x136 ~jump[1]","",""],"expected":"breq 0x150\n0x00000150\n\n","broken":false},{"name":"avr br - backward branch","file":"malloc://1024","commands":["","wx e1f7 @ 0x14a","e asm.arch=avr","e asm.cpu=ATmega8","ao 1 @ 0x14a ~jump[1]","",""],"expected":"0x00000144\n\n","broken":false},{"name":"avr br - backward branch 2","file":"malloc://1024","commands":["","wx f0cf @ 0x14e","e asm.arch=avr","e asm.cpu=ATmega8","s 0x14e","ao 1 @ 0x14e ~jump[1]","",""],"expected":"0x00000130\n\n","broken":false},{"name":"avr jmp - absolute jump","file":"malloc://1024","commands":["","wx 0c941234 @ 0x15e","e asm.arch=avr","e asm.cpu=ATmega8","ao 1 @ 0x15e~jump[1]","",""],"expected":"0x00006824\n\n","broken":false},{"name":"avr rjmp - relative jump backward at 0x1000","file":"malloc://8192","commands":["","e asm.cpu=ATmega1280","wx 00c8 01c8 7ec8 7fc8 80c8 81c8","aoe 4","pi 4","",""],"expected":"0x1000 2,pc,=\n0x1002 6,pc,=\n0x1004 258,pc,=\n0x1006 262,pc,=\nrjmp 0x2\nrjmp 0x6\nrjmp 0x102\nrjmp 0x106\n\n","broken":false},{"name":"avr rjmp - relative jump backward - at 0","file":"malloc://8192","commands":["","e asm.cpu=ATmega1280","wx 00c8 01c8 7ec8 7fc8 80c8 81c8","aoe 4","pi 4","",""],"expected":"0x0 61442,pc,=\n0x2 61446,pc,=\n0x4 61698,pc,=\n0x6 61702,pc,=\nrjmp 0xfffff002\nrjmp 0xfffff006\nrjmp 0xfffff102\nrjmp 0xfffff106\n\n","broken":false},{"name":"avr rjmp - relative jump forward","file":"malloc://8192","commands":["","wxs 00c0 01c0 02c0 03c0 7ec0 7fc0 80c0 81c0","wxs fec0 ffc0 00c1 01c1 7ec1 7fc1 80c1 81c1","wxs fec1 ffc1 00c2 01c2 7ec2 7fc2 80c2 81c2","wxs fec2 ffc2 00c3 01c3 7ec3 7fc3 80c3 81c3","wxs fec3 ffc3 00c4 01c4 7ec4 7fc4 80c4 81c4","wxs fec4 ffc4 00c5 01c5 7ec5 7fc5 80c5 81c5","wxs fec5 ffc5 00c6 01c6 7ec6 7fc6 80c6 81c6","wxs fec6 ffc6 00c7 01c7 7ec7 7fc7 80c7 81c7","wxs fec7 ffc7","e asm.arch=avr","e asm.cpu=ATmega640","aoe 66 @ 0","",""],"expected":"0x0 2,pc,=\n0x2 6,pc,=\n0x4 10,pc,=\n0x6 14,pc,=\n0x8 262,pc,=\n0xa 266,pc,=\n0xc 270,pc,=\n0xe 274,pc,=\n0x10 526,pc,=\n0x12 530,pc,=\n0x14 534,pc,=\n0x16 538,pc,=\n0x18 790,pc,=\n0x1a 794,pc,=\n0x1c 798,pc,=\n0x1e 802,pc,=\n0x20 1054,pc,=\n0x22 1058,pc,=\n0x24 1062,pc,=\n0x26 1066,pc,=\n0x28 1318,pc,=\n0x2a 1322,pc,=\n0x2c 1326,pc,=\n0x2e 1330,pc,=\n0x30 1582,pc,=\n0x32 1586,pc,=\n0x34 1590,pc,=\n0x36 1594,pc,=\n0x38 1846,pc,=\n0x3a 1850,pc,=\n0x3c 1854,pc,=\n0x3e 1858,pc,=\n0x40 2110,pc,=\n0x42 2114,pc,=\n0x44 2118,pc,=\n0x46 2122,pc,=\n0x48 2374,pc,=\n0x4a 2378,pc,=\n0x4c 2382,pc,=\n0x4e 2386,pc,=\n0x50 2638,pc,=\n0x52 2642,pc,=\n0x54 2646,pc,=\n0x56 2650,pc,=\n0x58 2902,pc,=\n0x5a 2906,pc,=\n0x5c 2910,pc,=\n0x5e 2914,pc,=\n0x60 3166,pc,=\n0x62 3170,pc,=\n0x64 3174,pc,=\n0x66 3178,pc,=\n0x68 3430,pc,=\n0x6a 3434,pc,=\n0x6c 3438,pc,=\n0x6e 3442,pc,=\n0x70 3694,pc,=\n0x72 3698,pc,=\n0x74 3702,pc,=\n0x76 3706,pc,=\n0x78 3958,pc,=\n0x7a 3962,pc,=\n0x7c 3966,pc,=\n0x7e 3970,pc,=\n0x80 4222,pc,=\n0x82 4226,pc,=\n\n","broken":false},{"name":"avr rjmp - relative jump backward","file":"malloc://8192","commands":["","wx 00c8 01c8 7ec8 7fc8 80c8 81c8 fec8 ffc8 @ 0x1000","wx 00c9 01c9 7ec9 7fc9 80c9 81c9 fec9 ffc9 @ 0x1010","wx 00ca 01ca 7eca 7fca 80ca 81ca feca ffca @ 0x1020","wx 00cb 01cb 7ecb 7fcb 80cb 81cb fecb ffcb @ 0x1030","wx 00cc 01cc 7ecc 7fcc 80cc 81cc fecc ffcc @ 0x1040","wx 00cd 01cd 7ecd 7fcd 80cd 81cd fecd ffcd @ 0x1050","wx 00ce 01ce 7ece 7fce 80ce 81ce fece ffce @ 0x1060","wx 00cf 01cf 7ecf 7fcf 80cf 81cf fecf ffcf @ 0x1070","e asm.arch=avr","e asm.cpu=ATmega640","aoe 64 @ 0x1000","",""],"expected":"0x1000 2,pc,=\n0x1002 6,pc,=\n0x1004 258,pc,=\n0x1006 262,pc,=\n0x1008 266,pc,=\n0x100a 270,pc,=\n0x100c 522,pc,=\n0x100e 526,pc,=\n0x1010 530,pc,=\n0x1012 534,pc,=\n0x1014 786,pc,=\n0x1016 790,pc,=\n0x1018 794,pc,=\n0x101a 798,pc,=\n0x101c 1050,pc,=\n0x101e 1054,pc,=\n0x1020 1058,pc,=\n0x1022 1062,pc,=\n0x1024 1314,pc,=\n0x1026 1318,pc,=\n0x1028 1322,pc,=\n0x102a 1326,pc,=\n0x102c 1578,pc,=\n0x102e 1582,pc,=\n0x1030 1586,pc,=\n0x1032 1590,pc,=\n0x1034 1842,pc,=\n0x1036 1846,pc,=\n0x1038 1850,pc,=\n0x103a 1854,pc,=\n0x103c 2106,pc,=\n0x103e 2110,pc,=\n0x1040 2114,pc,=\n0x1042 2118,pc,=\n0x1044 2370,pc,=\n0x1046 2374,pc,=\n0x1048 2378,pc,=\n0x104a 2382,pc,=\n0x104c 2634,pc,=\n0x104e 2638,pc,=\n0x1050 2642,pc,=\n0x1052 2646,pc,=\n0x1054 2898,pc,=\n0x1056 2902,pc,=\n0x1058 2906,pc,=\n0x105a 2910,pc,=\n0x105c 3162,pc,=\n0x105e 3166,pc,=\n0x1060 3170,pc,=\n0x1062 3174,pc,=\n0x1064 3426,pc,=\n0x1066 3430,pc,=\n0x1068 3434,pc,=\n0x106a 3438,pc,=\n0x106c 3690,pc,=\n0x106e 3694,pc,=\n0x1070 3698,pc,=\n0x1072 3702,pc,=\n0x1074 3954,pc,=\n0x1076 3958,pc,=\n0x1078 3962,pc,=\n0x107a 3966,pc,=\n0x107c 4218,pc,=\n0x107e 4222,pc,=\n\n","broken":false},{"name":"avr functions 1","file":"../bins/firmware/arduino_avr.bin","commands":["","e asm.arch=avr","aaa","axt 0x28a","",""],"expected":"fcn.0000029e 0x328 [CODE] jmp 0x28a\n","broken":false},{"name":"avr functions 2","file":"-","commands":["","e asm.arch=avr","wx 1895","ao 1~fam[1]","af","afi~type[1]","afi~name[1]","",""],"expected":"priv\nint\nint.00000000\n\n","broken":false},{"name":"search asm commands with internal grep","file":"../bins/firmware/arduino_avr.bin","commands":["/c ldi~0x6d",""],"expected":"0x00000276   # 2: ldi r22, 0x6d\n\n","broken":false},{"name":"search asm commands with filter","file":"../bins/firmware/arduino_avr.bin","commands":["/c ldi ~ 0x18",""],"expected":"0x00001672   # 2: ldi r24, 0x18\n0x000019a4   # 2: ldi r18, 0x18\n\n","broken":false},{"name":"search asm commands with filter and align = 2","file":"../bins/firmware/arduino_avr.bin","commands":["e search.align=2","/c in ~ 0x12","",""],"expected":"0x00000282   # 2: in r24, 0x12\n\n","broken":false},{"name":"Search rop gadgets for in command","file":"../bins/firmware/arduino_avr.bin","commands":["e search.align=2","/R in r24",""],"expected":"  0x0000027e           0e947304  call 0x8e6\n  0x00000282               82b3  in r24, 0x12\n  0x00000284               8058  subi r24, 0x80\n  0x00000286               82bb  out 0x12, r24\n  0x00000288               0895  ret\n\n  0x00000292           0e947304  call 0x8e6\n  0x00000296               88b3  in r24, 0x18\n  0x00000298               8058  subi r24, 0x80\n  0x0000029a               88bb  out 0x18, r24\n  0x0000029c               0895  ret\n\n  0x000005c4               12c0  rjmp 0x5ea\n  0x000005c6               8fb5  in r24, 0x2f\n  0x000005c8               8f77  andi r24, 0x7f\n  0x000005ca               02c0  rjmp 0x5d0\n\n  0x000005cc               8fb5  in r24, 0x2f\n  0x000005ce               8f7d  andi r24, 0xdf\n  0x000005d0               8fbd  out 0x2f, r24\n  0x000005d2               0895  ret\n\n  0x000005d4               85b5  in r24, 0x25\n  0x000005d6               8f7d  andi r24, 0xdf\n  0x000005d8               85bd  out 0x25, r24\n  0x000005da               0895  ret\n\n\n","broken":false},{"name":"Search rop gadgets for IN command with align=2","file":"../bins/firmware/arduino_avr.bin","commands":["e search.align=2","/R in r24","",""],"expected":"  0x0000027e           0e947304  call 0x8e6\n  0x00000282               82b3  in r24, 0x12\n  0x00000284               8058  subi r24, 0x80\n  0x00000286               82bb  out 0x12, r24\n  0x00000288               0895  ret\n\n  0x00000292           0e947304  call 0x8e6\n  0x00000296               88b3  in r24, 0x18\n  0x00000298               8058  subi r24, 0x80\n  0x0000029a               88bb  out 0x18, r24\n  0x0000029c               0895  ret\n\n  0x000005c4               12c0  rjmp 0x5ea\n  0x000005c6               8fb5  in r24, 0x2f\n  0x000005c8               8f77  andi r24, 0x7f\n  0x000005ca               02c0  rjmp 0x5d0\n\n  0x000005cc               8fb5  in r24, 0x2f\n  0x000005ce               8f7d  andi r24, 0xdf\n  0x000005d0               8fbd  out 0x2f, r24\n  0x000005d2               0895  ret\n\n  0x000005d4               85b5  in r24, 0x25\n  0x000005d6               8f7d  andi r24, 0xdf\n  0x000005d8               85bd  out 0x25, r24\n  0x000005da               0895  ret\n\n\n","broken":false},{"name":"disasm code after search command IN","file":"../bins/firmware/arduino_avr.bin","commands":["","s 0","/c in ~ 0x18","pd 5",""],"expected":"0x00000296   # 2: in r24, 0x18\n        ,=\u003c 0x00000000      0c94ac00       jmp 0x158\n       ,==\u003c 0x00000004      0c94db00       jmp 0x1b6\n      ,===\u003c 0x00000008      0c94db00       jmp 0x1b6\n     ,====\u003c 0x0000000c      0c94db00       jmp 0x1b6\n    ,=====\u003c 0x00000010      0c94db00       jmp 0x1b6\n\n","broken":false},{"name":"entry point and bin format - arduino","file":"../bins/firmware/arduino_avr.bin","commands":["","?v $$","i~arch[1]",""],"expected":"0x158\navr\n\n","broken":false},{"name":"entry point and bin format - jumpy","file":"../bins/firmware/jumpy.bin","commands":["","?v $$","i~arch[1]",""],"expected":"0x8a\navr\n\n","broken":false},{"name":"avr search","file":"../bins/firmware/arduino_avr.bin","commands":["e asm.arch=avr","aaa","/c call 0x4ec","",""],"expected":"0x000003e2   # 4: call fcn.000004ec\n\n","broken":false},{"name":"avr search - XXX dupped hit","file":"../bins/firmware/arduino_avr.bin","commands":["e asm.arch=avr","aaa","/c call 0x4ec","",""],"expected":"0x000003e2   # 4: call fcn.000004ec\n\n","broken":false},{"name":"avr search 2","file":"../bins/firmware/arduino_avr.bin","commands":["e asm.arch=avr","aac @ 0","axt 0x4ec","",""],"expected":"fcn.00000360 0x3e2 [CALL] call fcn.000004ec\n","broken":false},{"name":"avr search 3","file":"../bins/firmware/arduino_avr.bin","commands":["e asm.arch=avr","aaa","axt 0x4ec","",""],"expected":"fcn.00000360 0x3e2 [CALL] call fcn.000004ec\n","broken":false}]
+[{
+    "name": "avr DISasm: [0e940b10 =\u003e 0x00002016] (ANAL)",
+    "file": "malloc://4096",
+    "commands": ["", "e asm.arch=avr", "wx 0e940b10 @ 0x2d0", "s 0x2d0", "ao 1~jump[1]", "", ""],
+    "expected": "0x00002016\n\n",
+    "broken": false
+}, {
+    "name": "avr DISasm: [0e940b10 =\u003e call] - jump check",
+    "file": "malloc://4096",
+    "commands": ["", "e asm.arch=avr", "s 0x2d0", "wx 0e940b10", "ao 1~jump", "", ""],
+    "expected": "jump: 0x00002016\n\n",
+    "broken": false
+}, {
+    "name": "avr DISasm: [sts] - jump check",
+    "file": "malloc://4096",
+    "commands": ["", "e asm.arch=avr", "s 0x2d0", "wx 9093c007", "ao 1~jump", "", ""],
+    "expected": "\n",
+    "broken": false
+}, {
+    "name": "avr DISasm: negative baddr",
+    "file": "../../bins/elf/analysis/bugurtos-avr.elf",
+    "commands": ["s 0x506", "pd 2~!1", "s+2", "pd 1", "", ""],
+    "expected": "call 0x18CE\ncall 0x18CE\n\n",
+    "broken": true
+}, {
+    "name": "avr DISasm: opcode size",
+    "file": "-",
+    "commands": ["e asm.arch=avr", "wx 0e941122", "ao~size[1]", "", ""],
+    "expected": "4\n\n",
+    "broken": false
+}, {
+    "name": "avr DISasm: IO-Ports",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["", "pd 1 @ 0x00000170~?IO", "", ""],
+    "expected": "1\n\n",
+    "broken": false
+}, {
+    "name": "avr br - forward branch",
+    "file": "malloc://1024",
+    "commands": ["", "wx 61f0 @ 0x136", "e asm.arch=avr", "e asm.cpu=ATmega8", "pi 1 @ 0x136", "ao 1 @ 0x136 ~jump[1]", "", ""],
+    "expected": "breq 0x150\n0x00000150\n\n",
+    "broken": false
+}, {
+    "name": "avr br - backward branch",
+    "file": "malloc://1024",
+    "commands": ["", "wx e1f7 @ 0x14a", "e asm.arch=avr", "e asm.cpu=ATmega8", "ao 1 @ 0x14a ~jump[1]", "", ""],
+    "expected": "0x00000144\n\n",
+    "broken": false
+}, {
+    "name": "avr br - backward branch 2",
+    "file": "malloc://1024",
+    "commands": ["", "wx f0cf @ 0x14e", "e asm.arch=avr", "e asm.cpu=ATmega8", "s 0x14e", "ao 1 @ 0x14e ~jump[1]", "", ""],
+    "expected": "0x00000130\n\n",
+    "broken": false
+}, {
+    "name": "avr jmp - absolute jump",
+    "file": "malloc://1024",
+    "commands": ["", "wx 0c941234 @ 0x15e", "e asm.arch=avr", "e asm.cpu=ATmega8", "ao 1 @ 0x15e~jump[1]", "", ""],
+    "expected": "0x00006824\n\n",
+    "broken": false
+}, {
+    "name": "avr rjmp - relative jump backward at 0x1000",
+    "file": "malloc://8192",
+    "commands": ["", "e asm.cpu=ATmega1280", "wx 00c8 01c8 7ec8 7fc8 80c8 81c8", "aoe 4", "pi 4", "", ""],
+    "expected": "0x1000 2,pc,=\n0x1002 6,pc,=\n0x1004 258,pc,=\n0x1006 262,pc,=\nrjmp 0x2\nrjmp 0x6\nrjmp 0x102\nrjmp 0x106\n\n",
+    "broken": false
+}, {
+    "name": "avr rjmp - relative jump backward - at 0",
+    "file": "malloc://8192",
+    "commands": ["", "e asm.cpu=ATmega1280", "wx 00c8 01c8 7ec8 7fc8 80c8 81c8", "aoe 4", "pi 4", "", ""],
+    "expected": "0x0 61442,pc,=\n0x2 61446,pc,=\n0x4 61698,pc,=\n0x6 61702,pc,=\nrjmp 0xfffff002\nrjmp 0xfffff006\nrjmp 0xfffff102\nrjmp 0xfffff106\n\n",
+    "broken": false
+}, {
+    "name": "avr rjmp - relative jump forward",
+    "file": "malloc://8192",
+    "commands": ["", "wxs 00c0 01c0 02c0 03c0 7ec0 7fc0 80c0 81c0", "wxs fec0 ffc0 00c1 01c1 7ec1 7fc1 80c1 81c1", "wxs fec1 ffc1 00c2 01c2 7ec2 7fc2 80c2 81c2", "wxs fec2 ffc2 00c3 01c3 7ec3 7fc3 80c3 81c3", "wxs fec3 ffc3 00c4 01c4 7ec4 7fc4 80c4 81c4", "wxs fec4 ffc4 00c5 01c5 7ec5 7fc5 80c5 81c5", "wxs fec5 ffc5 00c6 01c6 7ec6 7fc6 80c6 81c6", "wxs fec6 ffc6 00c7 01c7 7ec7 7fc7 80c7 81c7", "wxs fec7 ffc7", "e asm.arch=avr", "e asm.cpu=ATmega640", "aoe 66 @ 0", "", ""],
+    "expected": "0x0 2,pc,=\n0x2 6,pc,=\n0x4 10,pc,=\n0x6 14,pc,=\n0x8 262,pc,=\n0xa 266,pc,=\n0xc 270,pc,=\n0xe 274,pc,=\n0x10 526,pc,=\n0x12 530,pc,=\n0x14 534,pc,=\n0x16 538,pc,=\n0x18 790,pc,=\n0x1a 794,pc,=\n0x1c 798,pc,=\n0x1e 802,pc,=\n0x20 1054,pc,=\n0x22 1058,pc,=\n0x24 1062,pc,=\n0x26 1066,pc,=\n0x28 1318,pc,=\n0x2a 1322,pc,=\n0x2c 1326,pc,=\n0x2e 1330,pc,=\n0x30 1582,pc,=\n0x32 1586,pc,=\n0x34 1590,pc,=\n0x36 1594,pc,=\n0x38 1846,pc,=\n0x3a 1850,pc,=\n0x3c 1854,pc,=\n0x3e 1858,pc,=\n0x40 2110,pc,=\n0x42 2114,pc,=\n0x44 2118,pc,=\n0x46 2122,pc,=\n0x48 2374,pc,=\n0x4a 2378,pc,=\n0x4c 2382,pc,=\n0x4e 2386,pc,=\n0x50 2638,pc,=\n0x52 2642,pc,=\n0x54 2646,pc,=\n0x56 2650,pc,=\n0x58 2902,pc,=\n0x5a 2906,pc,=\n0x5c 2910,pc,=\n0x5e 2914,pc,=\n0x60 3166,pc,=\n0x62 3170,pc,=\n0x64 3174,pc,=\n0x66 3178,pc,=\n0x68 3430,pc,=\n0x6a 3434,pc,=\n0x6c 3438,pc,=\n0x6e 3442,pc,=\n0x70 3694,pc,=\n0x72 3698,pc,=\n0x74 3702,pc,=\n0x76 3706,pc,=\n0x78 3958,pc,=\n0x7a 3962,pc,=\n0x7c 3966,pc,=\n0x7e 3970,pc,=\n0x80 4222,pc,=\n0x82 4226,pc,=\n\n",
+    "broken": false
+}, {
+    "name": "avr rjmp - relative jump backward",
+    "file": "malloc://8192",
+    "commands": ["", "wx 00c8 01c8 7ec8 7fc8 80c8 81c8 fec8 ffc8 @ 0x1000", "wx 00c9 01c9 7ec9 7fc9 80c9 81c9 fec9 ffc9 @ 0x1010", "wx 00ca 01ca 7eca 7fca 80ca 81ca feca ffca @ 0x1020", "wx 00cb 01cb 7ecb 7fcb 80cb 81cb fecb ffcb @ 0x1030", "wx 00cc 01cc 7ecc 7fcc 80cc 81cc fecc ffcc @ 0x1040", "wx 00cd 01cd 7ecd 7fcd 80cd 81cd fecd ffcd @ 0x1050", "wx 00ce 01ce 7ece 7fce 80ce 81ce fece ffce @ 0x1060", "wx 00cf 01cf 7ecf 7fcf 80cf 81cf fecf ffcf @ 0x1070", "e asm.arch=avr", "e asm.cpu=ATmega640", "aoe 64 @ 0x1000", "", ""],
+    "expected": "0x1000 2,pc,=\n0x1002 6,pc,=\n0x1004 258,pc,=\n0x1006 262,pc,=\n0x1008 266,pc,=\n0x100a 270,pc,=\n0x100c 522,pc,=\n0x100e 526,pc,=\n0x1010 530,pc,=\n0x1012 534,pc,=\n0x1014 786,pc,=\n0x1016 790,pc,=\n0x1018 794,pc,=\n0x101a 798,pc,=\n0x101c 1050,pc,=\n0x101e 1054,pc,=\n0x1020 1058,pc,=\n0x1022 1062,pc,=\n0x1024 1314,pc,=\n0x1026 1318,pc,=\n0x1028 1322,pc,=\n0x102a 1326,pc,=\n0x102c 1578,pc,=\n0x102e 1582,pc,=\n0x1030 1586,pc,=\n0x1032 1590,pc,=\n0x1034 1842,pc,=\n0x1036 1846,pc,=\n0x1038 1850,pc,=\n0x103a 1854,pc,=\n0x103c 2106,pc,=\n0x103e 2110,pc,=\n0x1040 2114,pc,=\n0x1042 2118,pc,=\n0x1044 2370,pc,=\n0x1046 2374,pc,=\n0x1048 2378,pc,=\n0x104a 2382,pc,=\n0x104c 2634,pc,=\n0x104e 2638,pc,=\n0x1050 2642,pc,=\n0x1052 2646,pc,=\n0x1054 2898,pc,=\n0x1056 2902,pc,=\n0x1058 2906,pc,=\n0x105a 2910,pc,=\n0x105c 3162,pc,=\n0x105e 3166,pc,=\n0x1060 3170,pc,=\n0x1062 3174,pc,=\n0x1064 3426,pc,=\n0x1066 3430,pc,=\n0x1068 3434,pc,=\n0x106a 3438,pc,=\n0x106c 3690,pc,=\n0x106e 3694,pc,=\n0x1070 3698,pc,=\n0x1072 3702,pc,=\n0x1074 3954,pc,=\n0x1076 3958,pc,=\n0x1078 3962,pc,=\n0x107a 3966,pc,=\n0x107c 4218,pc,=\n0x107e 4222,pc,=\n\n",
+    "broken": false
+}, {
+    "name": "avr functions 1",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["", "e asm.arch=avr", "aaa", "axt 0x28a", "", ""],
+    "expected": "fcn.0000029e 0x328 [CODE] jmp 0x28a\n",
+    "broken": false
+}, {
+    "name": "avr functions 2",
+    "file": "-",
+    "commands": ["", "e asm.arch=avr", "wx 1895", "ao 1~fam[1]", "af", "afi~type[1]", "afi~name[1]", "", ""],
+    "expected": "priv\nint\nint.00000000\n\n",
+    "broken": false
+}, {
+    "name": "search asm commands with internal grep",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["/c ldi~0x6d", ""],
+    "expected": "0x00000276   # 2: ldi r22, 0x6d\n\n",
+    "broken": false
+}, {
+    "name": "search asm commands with filter",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["/c ldi ~ 0x18", ""],
+    "expected": "0x00001672   # 2: ldi r24, 0x18\n0x000019a4   # 2: ldi r18, 0x18\n\n",
+    "broken": false
+}, {
+    "name": "search asm commands with filter and align = 2",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e search.align=2", "/c in ~ 0x12", "", ""],
+    "expected": "0x00000282   # 2: in r24, 0x12\n\n",
+    "broken": false
+}, {
+    "name": "Search rop gadgets for in command",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e search.align=2", "/R in r24", ""],
+    "expected": "  0x0000027e           0e947304  call 0x8e6\n  0x00000282               82b3  in r24, 0x12\n  0x00000284               8058  subi r24, 0x80\n  0x00000286               82bb  out 0x12, r24\n  0x00000288               0895  ret\n\n  0x00000292           0e947304  call 0x8e6\n  0x00000296               88b3  in r24, 0x18\n  0x00000298               8058  subi r24, 0x80\n  0x0000029a               88bb  out 0x18, r24\n  0x0000029c               0895  ret\n\n  0x000005c4               12c0  rjmp 0x5ea\n  0x000005c6               8fb5  in r24, 0x2f\n  0x000005c8               8f77  andi r24, 0x7f\n  0x000005ca               02c0  rjmp 0x5d0\n\n  0x000005cc               8fb5  in r24, 0x2f\n  0x000005ce               8f7d  andi r24, 0xdf\n  0x000005d0               8fbd  out 0x2f, r24\n  0x000005d2               0895  ret\n\n  0x000005d4               85b5  in r24, 0x25\n  0x000005d6               8f7d  andi r24, 0xdf\n  0x000005d8               85bd  out 0x25, r24\n  0x000005da               0895  ret\n\n\n",
+    "broken": false
+}, {
+    "name": "Search rop gadgets for IN command with align=2",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e search.align=2", "/R in r24", "", ""],
+    "expected": "  0x0000027e           0e947304  call 0x8e6\n  0x00000282               82b3  in r24, 0x12\n  0x00000284               8058  subi r24, 0x80\n  0x00000286               82bb  out 0x12, r24\n  0x00000288               0895  ret\n\n  0x00000292           0e947304  call 0x8e6\n  0x00000296               88b3  in r24, 0x18\n  0x00000298               8058  subi r24, 0x80\n  0x0000029a               88bb  out 0x18, r24\n  0x0000029c               0895  ret\n\n  0x000005c4               12c0  rjmp 0x5ea\n  0x000005c6               8fb5  in r24, 0x2f\n  0x000005c8               8f77  andi r24, 0x7f\n  0x000005ca               02c0  rjmp 0x5d0\n\n  0x000005cc               8fb5  in r24, 0x2f\n  0x000005ce               8f7d  andi r24, 0xdf\n  0x000005d0               8fbd  out 0x2f, r24\n  0x000005d2               0895  ret\n\n  0x000005d4               85b5  in r24, 0x25\n  0x000005d6               8f7d  andi r24, 0xdf\n  0x000005d8               85bd  out 0x25, r24\n  0x000005da               0895  ret\n\n\n",
+    "broken": false
+}, {
+    "name": "disasm code after search command IN",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["", "s 0", "/c in ~ 0x18", "pd 5", ""],
+    "expected": "0x00000296   # 2: in r24, 0x18\n        ,=\u003c 0x00000000      0c94ac00       jmp 0x158\n       ,==\u003c 0x00000004      0c94db00       jmp 0x1b6\n      ,===\u003c 0x00000008      0c94db00       jmp 0x1b6\n     ,====\u003c 0x0000000c      0c94db00       jmp 0x1b6\n    ,=====\u003c 0x00000010      0c94db00       jmp 0x1b6\n\n",
+    "broken": false
+}, {
+    "name": "entry point and bin format - arduino",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["", "?v $$", "i~arch[1]", ""],
+    "expected": "0x158\navr\n\n",
+    "broken": false
+}, {
+    "name": "entry point and bin format - jumpy",
+    "file": "../bins/firmware/jumpy.bin",
+    "commands": ["", "?v $$", "i~arch[1]", ""],
+    "expected": "0x8a\navr\n\n",
+    "broken": false
+}, {
+    "name": "avr search",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e asm.arch=avr", "aaa", "/c call 0x4ec", "", ""],
+    "expected": "0x000003e2   # 4: call fcn.000004ec\n\n",
+    "broken": false
+}, {
+    "name": "avr search - XXX dupped hit",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e asm.arch=avr", "aaa", "/c call 0x4ec", "", ""],
+    "expected": "0x000003e2   # 4: call fcn.000004ec\n\n",
+    "broken": false
+}, {
+    "name": "avr search 2",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e asm.arch=avr", "aac @ 0", "axt 0x4ec", "", ""],
+    "expected": "fcn.00000360 0x3e2 [CALL] call fcn.000004ec\n",
+    "broken": false
+}, {
+    "name": "avr search 3",
+    "file": "../bins/firmware/arduino_avr.bin",
+    "commands": ["e asm.arch=avr", "aaa", "axt 0x4ec", "", ""],
+    "expected": "fcn.00000360 0x3e2 [CALL] call fcn.000004ec\n",
+    "broken": false
+}]
