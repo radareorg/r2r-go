@@ -28,7 +28,7 @@ GOPATH     := $(CURDIR)/gopath
 BINFOLDER  := $(CURDIR)/bin
 R2PIPE     := github.com/radare/r2pipe-go
 R2PIPEPATH := $(GOPATH)/src/$(R2PIPE)
-GODIFF     := github.com/sergi/go-diff/diffmatchpatch
+GODIFF     := github.com/pmezard/go-difflib/difflib
 GODIFFPATH := $(GOPATH)/src/$(GODIFF)
 R2RMAIN    := r2r
 R2RBUILDER := r2r-build
@@ -48,11 +48,11 @@ $(BINFOLDER):
 
 $(R2PIPEPATH):
 	@echo "[DEPS] r2pipe"
-	@$(GO) get -v $(R2PIPE)
+	@$(GO) get -u -v $(R2PIPE)
 
 $(GODIFFPATH):
-	@echo "[DEPS] diffmatchpatch"
-	@$(GO) get -v $(GODIFF)
+	@echo "[DEPS] diff"
+	@$(GO) get -u -v $(GODIFF)
 
 
 $(GOPATH):
@@ -62,12 +62,12 @@ $(GOPATH):
 main:
 	@echo "[GO]" $(R2RMAIN)
 	@cd $(R2RMAIN); $(GO) build
-	@echo "[MV]" $(R2RMAIN)"/r2r"
+	@echo "[MV] r2r"
 	@mv $(R2RMAIN)/r2r $(BINFOLDER)/r2r
 
 builder: setup
 	@echo "[GO]" $(R2RBUILDER)
 	@cd $(R2RBUILDER); $(GO) build
-	@echo "[MV]" $(R2RBUILDER)"/r2r"
+	@echo "[MV] r2r-build"
 	@mv $(R2RBUILDER)/r2r-build $(BINFOLDER)/r2r-build
 

@@ -31,24 +31,35 @@ import (
 	"os"
 )
 
-
 func main() {
-	var failed bool = false
-
+	failed := false
+	result := TestResult{"", false, false}
 	if len(os.Args) != 2 {
-		fmt.Printf(os.Args[0], "<file.json>")
+		fmt.Printf(string(os.Args[0]), "<file.json>")
 		os.Exit(1)
 	}
-	filepath := os.Args[1]
-	fmt.Println("Loading tests from", filepath)
+	filepath := string(os.Args[1])
 	tests := load(filepath)
-
 	for _, test := range tests {
-		if !runtest(test) {
-		 	failed = true
+		runtest(&test, &result)
+		if result.Error {
+			fmt.Println("[XX]", test.Name, "crashed.")
+			fmt.Println(result.Message)
+			failed = true
+		} else if result.Success {
+			if test.Broken {
+				fmt.Println("[FX]", test.Name)
+			} else {
+				fmt.Println("[OK]", test.Name)
+			}
+		} else if test.Broken {
+			fmt.Println("[BR]", test.Name)
+		} else {
+			fmt.Println("[XX]", test.Name)
+			fmt.Println(result.Message)
+			failed = true
 		}
 	}
-
 	if failed {
 		os.Exit(1)
 	}

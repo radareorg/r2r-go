@@ -27,14 +27,21 @@
 package main
 
 import (
+	"github.com/pmezard/go-difflib/difflib"
 	"github.com/radare/r2pipe-go"
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"encoding/json"
 	"io/ioutil"
 	"strings"
+	"bytes"
 	"fmt"
 	"os"
 )
+
+type TestResult struct {
+	Message string
+	Success bool
+	Error bool
+}
 
 type R2Test struct {
 	Name string `json:"name"`
@@ -42,6 +49,22 @@ type R2Test struct {
 	Commands []string `json:"commands"`
 	Expected string `json:"expected"`
 	Broken bool `json:"broken"`
+}
+
+func debug(m string) {
+	fmt.Println(m)
+}
+
+func diff(str1, str2 string) string {
+	diff := difflib.UnifiedDiff{
+		A:        difflib.SplitLines(str1),
+		B:        difflib.SplitLines(str2),
+		FromFile: "expected",
+		ToFile:   "r2pipe",
+		Context:  3,
+	}
+	text, _ := difflib.GetUnifiedDiffString(diff)
+	return text
 }
 
 func load(fpath string) []R2Test {
@@ -52,33 +75,41 @@ func load(fpath string) []R2Test {
 	}
 	var tests []R2Test
 	json.Unmarshal(raw, &tests)
-	fmt.Printf("Loaded", len(tests), "from", fpath, "\n")
 	return tests
 }
 
-func runtest(test R2Test) bool {
+func runtest(test *R2Test, result *TestResult) {
+
+	result.Success = true
+	result.Error = false
 	instance, err := r2pipe.NewPipe(test.File)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err.Error())
-		return false;
+		result.Message = fmt.Sprintf("Error: %s\n", err.Error())
+		result.Success = false
+		result.Error = true
+		return;
 	}
 	defer instance.Close()
 	if test.Commands != nil {
+		var buffer bytes.Buffer
 		for _, command := range test.Commands {
-			buf, err := instance.Cmd(command)
+			output, err := instance.Cmd(command)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error:", err.Error())
-				return false;
+				result.Message = fmt.Sprintf("Error: %s\n", err.Error())
+				result.Success = false
+				result.Error = true
+				return;
 			}
-			str := string(buf)
-			if strings.Compare(str, test.Expected) != 0 {
-				fmt.Println(test.File)
-				dmp := diffmatchpatch.New()
-				diffs := dmp.DiffMain(str, test.Expected, false)
-				fmt.Println(dmp.DiffPrettyText(diffs))
-			}
+			t := string(output)
+			buffer.WriteString(t)
+		}
+		buffer.WriteString("\n\n")
+		str := buffer.String()
+		if strings.Compare(str, test.Expected) != 0 {
+			diffs := diff(test.Expected, str)
+			result.Message = diffs
+			result.Success = false
 		}
 	}
-	return true;
 }
 
