@@ -6,7 +6,7 @@ if [ -d "exported" ]; then
 fi
 mkdir "./exported"
 if [ ! -d "radare2-regressions" ]; then
-	git clone https://github.com/radare/radare2-regressions || exit 1
+	git clone --depth 2 https://github.com/radare/radare2-regressions || exit 1
 fi
 
 find radare2-regressions/new/db/ -type f | while read FNAME; do

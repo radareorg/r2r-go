@@ -27,38 +27,35 @@
 package main
 
 import (
+ 	"sync"
 	"fmt"
 	"os"
 )
 
 func main() {
 	failed := false
-	result := TestResult{"", false, false}
 	if len(os.Args) != 2 {
 		fmt.Printf(string(os.Args[0]), "<file.json>")
 		os.Exit(1)
 	}
 	filepath := string(os.Args[1])
+	var wg sync.WaitGroup
 	tests := load(filepath)
-	for _, test := range tests {
-		runtest(&test, &result)
-		if result.Error {
-			fmt.Println("[XX]", test.Name, "crashed.")
-			fmt.Println(result.Message)
-			failed = true
-		} else if result.Success {
-			if test.Broken {
-				fmt.Println("[FX]", test.Name)
-			} else {
-				fmt.Println("[OK]", test.Name)
-			}
-		} else if test.Broken {
-			fmt.Println("[BR]", test.Name)
-		} else {
-			fmt.Println("[XX]", test.Name, test.File, test.Args)
-			fmt.Println(result.Message)
+	length := len(tests)
+	results := make([]*TestResult, length)
+	for index, test := range tests {
+		wg.Add(1)
+		go func(i int, test *R2Test) {
+			defer wg.Done()
+			results[i] = test.Exec()
+		}(index, &test)
+	}
+	wg.Wait()
+	for _, result := range results {
+		if result.Print(true) {
 			failed = true
 		}
+		//defer wg.Done()
 	}
 	if failed {
 		os.Exit(1)

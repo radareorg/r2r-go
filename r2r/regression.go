@@ -37,25 +37,6 @@ import (
 	"os"
 )
 
-type TestResult struct {
-	Message string
-	Success bool
-	Error bool
-}
-
-type R2Test struct {
-	Name string `json:"name"`
-	File string `json:"file"`
-	Args string `json:"args"`
-	Commands []string `json:"commands"`
-	Expected string `json:"expected"`
-	Broken bool `json:"broken"`
-}
-
-func debug(m string) {
-	fmt.Println(m)
-}
-
 func diff(str1, str2 string) string {
 	diff := difflib.UnifiedDiff{
 		A:        difflib.SplitLines(str1),
@@ -79,8 +60,45 @@ func load(fpath string) []R2Test {
 	return tests
 }
 
-func runtest(test *R2Test, result *TestResult) {
+type TestResult struct {
+	Message string
+	Success bool
+	Error bool
+	Test *R2Test
+}
 
+func (result TestResult) Print(printall bool) bool {
+	if result.Error {
+		fmt.Println("[XX]", result.Test.Name, "something went really wrong.")
+		fmt.Println(result.Message)
+	} else if result.Success {
+		if result.Test.Broken {
+			fmt.Println("[FX]", result.Test.Name)
+		} else if printall {
+			fmt.Println("[OK]", result.Test.Name)
+		}
+		return true
+	} else if result.Test.Broken {
+		fmt.Println("[BR]", result.Test.Name)
+		return true
+	} else {
+		fmt.Println("[XX]", result.Test.Name, result.Test.File, result.Test.Args)
+		fmt.Println(result.Message)
+	}
+	return false
+}
+
+type R2Test struct {
+	Name string `json:"name"`
+	File string `json:"file"`
+	Args string `json:"args"`
+	Commands []string `json:"commands"`
+	Expected string `json:"expected"`
+	Broken bool `json:"broken"`
+}
+
+func (test R2Test) Exec() *TestResult {
+	result := &TestResult{"", false, false, &test}
 	result.Success = true
 	result.Error = false
 	var args []string = strings.Split(test.Args, " ")
@@ -90,7 +108,7 @@ func runtest(test *R2Test, result *TestResult) {
 		result.Message = fmt.Sprintf("Error: %s\n", err.Error())
 		result.Success = false
 		result.Error = true
-		return;
+		return result;
 	}
 	defer instance.Close()
 	if test.Commands != nil {
@@ -101,7 +119,7 @@ func runtest(test *R2Test, result *TestResult) {
 				result.Message = fmt.Sprintf("Error: %s\n", err.Error())
 				result.Success = false
 				result.Error = true
-				return;
+				return result;
 			}
 			t := string(output)
 			if len(t) > 0 {
@@ -119,5 +137,6 @@ func runtest(test *R2Test, result *TestResult) {
 			result.Success = false
 		}
 	}
+	return result
 }
 
