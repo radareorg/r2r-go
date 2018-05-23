@@ -52,7 +52,7 @@ func NewPipe(args ...string) (*Pipe, error) {
 	}
 
 	r2p := &Pipe{
-		File:   file,
+		File:   args[len(args) - 2],
 		r2cmd:  r2cmd,
 		stdin:  stdin,
 		stdout: stdout,
