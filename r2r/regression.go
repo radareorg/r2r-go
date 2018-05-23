@@ -28,7 +28,7 @@ package main
 
 import (
 	"github.com/pmezard/go-difflib/difflib"
-	"github.com/radare/r2pipe-go"
+//	"github.com/radare/r2pipe-go"
 	"encoding/json"
 	"io/ioutil"
 	"strings"
@@ -46,6 +46,7 @@ type TestResult struct {
 type R2Test struct {
 	Name string `json:"name"`
 	File string `json:"file"`
+	Args string `json:"args"`
 	Commands []string `json:"commands"`
 	Expected string `json:"expected"`
 	Broken bool `json:"broken"`
@@ -82,7 +83,9 @@ func runtest(test *R2Test, result *TestResult) {
 
 	result.Success = true
 	result.Error = false
-	instance, err := r2pipe.NewPipe(test.File)
+	var args []string = strings.Split(test.Args, " ")
+	args = append(args, test.File)
+	instance, err := NewPipe(args...)
 	if err != nil {
 		result.Message = fmt.Sprintf("Error: %s\n", err.Error())
 		result.Success = false
@@ -101,9 +104,14 @@ func runtest(test *R2Test, result *TestResult) {
 				return;
 			}
 			t := string(output)
-			buffer.WriteString(t)
+			if len(t) > 0 {
+				buffer.WriteString(t)
+			}
 		}
-		buffer.WriteString("\n\n")
+		// simple workaround for bad endline
+		if len(buffer.String()) < len(test.Expected) {
+			buffer.WriteString("\n")
+		} 
 		str := buffer.String()
 		if strings.Compare(str, test.Expected) != 0 {
 			diffs := diff(test.Expected, str)

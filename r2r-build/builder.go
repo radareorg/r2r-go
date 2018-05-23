@@ -40,6 +40,7 @@ import (
 type R2Test struct {
 	Name string `json:"name"`
 	File string `json:"file"`
+	Args string `json:"args"`
 	Commands []string `json:"commands"`
 	Expected string `json:"expected"`
 	Broken bool `json:"broken"`
@@ -54,12 +55,30 @@ func decode64(encoded string) string {
 	return string(decoded)
 }
 
-func populate(test *R2Test, str string) bool {
+func multilinequote(scanner *bufio.Scanner, instr string) string {
+	var s string = instr
+	for scanner.Scan() {
+		str := scanner.Text()
+		if strings.HasPrefix(str, "'") {
+			break
+		}
+		s += str + "\n"
+	}
+	return s
+}
+
+func populate(test *R2Test, str string, scanner *bufio.Scanner) bool {
 	if strings.HasPrefix(str, "NAME=") {
 		test.Name = str[5:]
 		return true
-	} else if strings.HasPrefix(str, "FILE=") {
+	} else if strings.HasPrefix(str, "ARGS=") {
+		test.Args = str[5:]
+		return true
+	}  else if strings.HasPrefix(str, "FILE=") {
 		test.File = str[5:]
+		for strings.HasPrefix(test.File, "../") {
+			test.File = test.File[3:]
+		}
 		return true
 	} else if strings.HasPrefix(str, "BROKEN=") {
 		if s, err := strconv.Atoi(str[7:]); err == nil {
@@ -71,30 +90,77 @@ func populate(test *R2Test, str string) bool {
 	} else if strings.HasPrefix(str, "EXPECT64=") {
 		test.Expected = decode64(str[9:])
 		return true
-	} else if strings.HasPrefix(str, "CMDS64=") {
-		test.Commands = strings.Split(decode64(str[7:]), "\n")
+	} else if strings.HasPrefix(str, "EXPECT='") {
+		str = str[8:]
+		test.Expected = multilinequote(scanner, str)
 		return true
+	} else if strings.HasPrefix(str, "EXPECT=") {
+		test.Expected = str[7:]
+		return true
+	} else if strings.HasPrefix(str, "CMDS64=") {
+		cmd := decode64(str[7:])
+		test.Commands = strings.Split(cmd, "\n")
+		return true
+	} else if strings.HasPrefix(str, "CMDS='") {
+		str = str[6:]
+		test.Commands = strings.Split(multilinequote(scanner, str), "\n")
+		return true
+	} else if strings.HasPrefix(str, "CMDS=") {
+		str = str[6:]
+		test.Commands = strings.Split(str, "\n")
+		return true
+	} else {
+		fmt.Println("Unknown:", str)
 	}
 	return false;
 }
 
 func build(infilepath string, outfilepath string) {
+	var skipone bool = false
+	var special string
+	var str string
 	var tests []R2Test
-	var e R2Test = R2Test{"","", make([]string, 0),"", false}
+	var e R2Test = R2Test{"","","", make([]string, 0),"", false}
 	file, err := os.Open(infilepath)
     if err != nil {
-	fmt.Fprintln(os.Stderr, "Error:", err.Error())
-	os.Exit(1)
+		fmt.Fprintln(os.Stderr, "Error:", err.Error())
+		os.Exit(1)
     }
     defer file.Close()
 	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		str := scanner.Text()
+	for skipone || scanner.Scan() {
+		str = scanner.Text()
 		
-		if !populate(&e, str) && strings.Compare(str, "RUN") == 0 {
-			fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
+		if strings.Compare(str, "RUN") == 0 {
+//			fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
 			tests = append(tests, e)
-			e = R2Test{"","", make([]string, 0),"", false}
+			e = R2Test{"","","", make([]string, 0),"", false}
+			skipone = false
+		} else if strings.HasPrefix(str, "CMDS=<<EXPECT") {
+			special = "CMDS=" + str[13:]
+			skipone = true
+			for scanner.Scan() {
+				str = scanner.Text()
+				if strings.HasPrefix(str, "EXPECT=") {
+					break
+				}
+				special += str + "\n"
+			}
+			populate(&e, special[:len(special) - 1], scanner)
+		} else if strings.HasPrefix(str, "EXPECT=<<RUN") {
+			special = "EXPECT=" + str[12:]
+			skipone = true
+			for scanner.Scan() {
+				str = scanner.Text()
+				if strings.HasPrefix(str, "RUN") {
+					break
+				}
+				special += str + "\n"
+			}
+			populate(&e, special[:len(special) - 1], scanner)
+		} else {
+			populate(&e, str, scanner)
+			skipone = false
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -102,8 +168,8 @@ func build(infilepath string, outfilepath string) {
 	}
 	bytes, err := json.Marshal(tests)
     if err != nil {
-	fmt.Fprintln(os.Stderr, "Error:", err.Error())
-	os.Exit(1)
+		fmt.Fprintln(os.Stderr, "Error:", err.Error())
+		os.Exit(1)
     }
     err = ioutil.WriteFile(outfilepath, bytes, 0644)
     if err != nil {

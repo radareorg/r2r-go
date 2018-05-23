@@ -55,7 +55,7 @@ func main() {
 		} else if test.Broken {
 			fmt.Println("[BR]", test.Name)
 		} else {
-			fmt.Println("[XX]", test.Name)
+			fmt.Println("[XX]", test.Name, test.File, test.Args)
 			fmt.Println(result.Message)
 			failed = true
 		}
