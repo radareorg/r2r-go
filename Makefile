@@ -26,8 +26,6 @@
 
 GOPATH     := $(CURDIR)/gopath
 BINFOLDER  := $(CURDIR)/bin
-R2PIPE     := github.com/radare/r2pipe-go
-R2PIPEPATH := $(GOPATH)/src/$(R2PIPE)
 GODIFF     := github.com/pmezard/go-difflib/difflib
 GODIFFPATH := $(GOPATH)/src/$(GODIFF)
 R2RMAIN    := r2r
@@ -40,20 +38,15 @@ all: setup main
 clean:
 	rm -rf $(BINFOLDER) $(GOPATH)
 
-setup: $(BINFOLDER) $(GOPATH) $(R2PIPEPATH) $(GODIFFPATH)
+setup: $(BINFOLDER) $(GOPATH) $(GODIFFPATH)
 
 $(BINFOLDER):
 	@echo "[MKDIR]" $(BINFOLDER)
 	@mkdir -p $(BINFOLDER)
 
-$(R2PIPEPATH):
-	@echo "[DEPS] r2pipe"
-	@$(GO) get -u -v $(R2PIPE)
-
 $(GODIFFPATH):
 	@echo "[DEPS] diff"
 	@$(GO) get -u -v $(GODIFF)
-
 
 $(GOPATH):
 	@echo "[MKDIR]" $(GOPATH)
