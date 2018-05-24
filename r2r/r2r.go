@@ -27,37 +27,90 @@
 package main
 
 import (
- 	"sync"
+	"encoding/json"
+	"io/ioutil"
+	"runtime"
+	"strconv"
 	"fmt"
 	"os"
 )
 
-func main() {
-	failed := false
-	if len(os.Args) != 2 {
-		fmt.Printf(string(os.Args[0]), "<file.json>")
+type ArgOption struct {
+	Description string
+	Argc int
+	Callback func(... string)
+}
+
+func loadJSON(fpath string) []R2Test {
+	raw, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
 	}
-	filepath := string(os.Args[1])
-	var wg sync.WaitGroup
-	tests := load(filepath)
-	length := len(tests)
-	results := make([]*TestResult, length)
-	for index, test := range tests {
-		wg.Add(1)
-		go func(i int, test *R2Test) {
-			defer wg.Done()
-			results[i] = test.Exec()
-		}(index, &test)
+	var tests []R2Test
+	json.Unmarshal(raw, &tests)
+	return tests
+}
+
+var MAX_JOBS int = runtime.NumCPU()
+
+var Options = map[string]ArgOption {
+	"--jobs": {
+		"defines how many jobs can be spawn. (if n < 1 then will be used the number of CPUs).",
+		1,
+		func(value... string) {
+			if s, err := strconv.Atoi(value[0]); err == nil &&  s > 0 {
+				MAX_JOBS = s
+			} else {
+				MAX_JOBS = runtime.NumCPU()
+			}
+		},
+	},
+}
+
+func usage() {
+	fmt.Println("Usage: ")
+	for k, v := range Options { 
+		fmt.Printf("%8s | %s (%d args)\n", k, v.Description, v.Argc)
 	}
-	wg.Wait()
-	for _, result := range results {
-		if result.Print(true) {
-			failed = true
+	os.Exit(1)
+}
+
+func badarg(arg string) {
+	fmt.Printf("Invalid argument '%s'\n", arg)
+	os.Exit(1)
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println(string(os.Args[0]), "[options] <file.json>")
+		os.Exit(1)
+	}
+	Argc := len(os.Args)
+	for i := 1; i < (Argc - 1); i++ {
+		arg := string(os.Args[i])
+		if arg == "--help" {
+			usage()
 		}
-		//defer wg.Done()
+		pair, ok := Options[arg]
+		if ok {
+			max := i + pair.Argc
+			if max < Argc {
+				pair.Callback(os.Args[i:max]...)
+			} else {
+				badarg(arg)
+			}
+		} else {
+			badarg(arg)
+		}
 	}
-	if failed {
+	filepath := string(os.Args[Argc - 1])
+	if filepath == "--help" {
+		usage()
+	}
+	tests := loadJSON(filepath)
+	pool := NewR2Pool(4)
+	if !pool.PerformTests(&tests) {
 		os.Exit(1)
 	}
 }

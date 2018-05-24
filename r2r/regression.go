@@ -28,13 +28,9 @@ package main
 
 import (
 	"github.com/pmezard/go-difflib/difflib"
-//	"github.com/radare/r2pipe-go"
-	"encoding/json"
-	"io/ioutil"
 	"strings"
 	"bytes"
 	"fmt"
-	"os"
 )
 
 func diff(str1, str2 string) string {
@@ -47,17 +43,6 @@ func diff(str1, str2 string) string {
 	}
 	text, _ := difflib.GetUnifiedDiffString(diff)
 	return text
-}
-
-func load(fpath string) []R2Test {
-	raw, err := ioutil.ReadFile(fpath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err.Error())
-		os.Exit(1)
-	}
-	var tests []R2Test
-	json.Unmarshal(raw, &tests)
-	return tests
 }
 
 type TestResult struct {
