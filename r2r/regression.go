@@ -31,6 +31,7 @@ import (
 	"strings"
 	"bytes"
 	"fmt"
+	"os"
 )
 
 func diff(str1, str2 string) string {
@@ -82,6 +83,11 @@ type R2Test struct {
 	Broken bool `json:"broken"`
 }
 
+type R2RegressionTest struct {
+	Type string `json:"type"`
+	Tests []R2Test `json:"tests"`
+}
+
 func (test R2Test) Exec() *TestResult {
 	result := &TestResult{"", false, false, &test}
 	result.Success = true
@@ -90,9 +96,15 @@ func (test R2Test) Exec() *TestResult {
 	args = append(args, test.File)
 	instance, err := NewPipe(args...)
 	if err != nil {
-		result.Message = fmt.Sprintf("Error: %s\n", err.Error())
+		result.Message = fmt.Sprintf("Error: %s", err.Error())
 		result.Success = false
 		result.Error = true
+		if _, err := os.Stat(test.File); os.IsNotExist(err) {
+			result.Message = fmt.Sprintf("Error: File %s doesn't exists", test.File)
+			result.Success = false
+			result.Error = true
+			return result;
+		}
 		return result;
 	}
 	defer instance.Close()
@@ -101,7 +113,7 @@ func (test R2Test) Exec() *TestResult {
 		for _, command := range test.Commands {
 			output, err := instance.Cmd(command)
 			if err != nil {
-				result.Message = fmt.Sprintf("Error: %s\n", err.Error())
+				result.Message = fmt.Sprintf("Error: %s", err.Error())
 				result.Success = false
 				result.Error = true
 				return result;

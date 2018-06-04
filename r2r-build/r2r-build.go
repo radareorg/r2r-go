@@ -52,7 +52,7 @@ func main() {
 		fmt.Println(filepath, "doesn't exists!")
 		os.Exit(1)
 	}
-	fmt.Println("TESTS: ", filepath)
-	fmt.Println("OUTPUT:", outputpath)
+	//fmt.Println("TESTS: ", filepath)
+	//fmt.Println("OUTPUT:", outputpath)
 	build(filepath, outputpath)
 }
