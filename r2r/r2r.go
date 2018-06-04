@@ -41,13 +41,13 @@ type ArgOption struct {
 	Callback func(... string)
 }
 
-func loadJSON(fpath string) []R2Test {
+func loadJSON(fpath string) R2RegressionTest {
 	raw, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
 	}
-	var tests []R2Test
+	var tests R2RegressionTest
 	json.Unmarshal(raw, &tests)
 	return tests
 }
@@ -59,10 +59,21 @@ var Options = map[string]ArgOption {
 		"defines how many jobs can be spawn. (if n < 1 then will be used the number of CPUs).",
 		1,
 		func(value... string) {
-			if s, err := strconv.Atoi(value[0]); err == nil &&  s > 0 {
-				MAX_JOBS = s
-			} else {
-				MAX_JOBS = runtime.NumCPU()
+			s, err := strconv.Atoi(value[0])
+			if err != nil || s < 1 {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			MAX_JOBS = s
+		},
+	},
+	"--wdir": {
+		"changes the current working directory",
+		1,
+		func(value... string) {
+			if err := os.Chdir(value[0]); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -94,9 +105,11 @@ func main() {
 		}
 		pair, ok := Options[arg]
 		if ok {
-			max := i + pair.Argc
+			max := i + pair.Argc + 1
 			if max < Argc {
-				pair.Callback(os.Args[i:max]...)
+				args := os.Args[i + 1:max]
+				pair.Callback(args...)
+				i = max - 1
 			} else {
 				badarg(arg)
 			}

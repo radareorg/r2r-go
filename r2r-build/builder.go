@@ -46,6 +46,11 @@ type R2Test struct {
 	Broken bool `json:"broken"`
 }
 
+type R2RegressionTest struct {
+	Type string `json:"type"`
+	Tests []R2Test `json:"tests"`
+}
+
 func decode64(encoded string) string {
 	decoded, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
@@ -119,7 +124,7 @@ func build(infilepath string, outfilepath string) {
 	var skipone bool = false
 	var special string
 	var str string
-	var tests []R2Test
+	var regr R2RegressionTest
 	var e R2Test = R2Test{"","","", make([]string, 0),"", false}
 	file, err := os.Open(infilepath)
     if err != nil {
@@ -133,7 +138,7 @@ func build(infilepath string, outfilepath string) {
 		
 		if strings.Compare(str, "RUN") == 0 {
 //			fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
-			tests = append(tests, e)
+			regr.Tests = append(regr.Tests, e)
 			e = R2Test{"","","", make([]string, 0),"", false}
 			skipone = false
 		} else if strings.HasPrefix(str, "CMDS=<<EXPECT") {
@@ -166,7 +171,8 @@ func build(infilepath string, outfilepath string) {
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 	}
-	bytes, err := json.Marshal(tests)
+	regr.Type = "cmd"
+	bytes, err := json.Marshal(regr)
     if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)

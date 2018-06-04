@@ -47,9 +47,9 @@ func R2Routine(pool *R2Pool, done chan bool) {
 	}
 }
 
-func (pool R2Pool) PerformTests(ptests *[]R2Test) bool {
+func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 	success := true
-	tests := (*ptests)
+	tests := regressions.Tests
 	done := make(chan bool, pool.Size)
 	length := len(tests)
 	pool.Tests = make(R2Channel, length)

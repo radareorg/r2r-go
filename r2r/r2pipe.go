@@ -3,13 +3,14 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
-	"fmt"
-	"io"
 	"os/exec"
 	"strings"
+	"bufio"
+	"bytes"
+	"time"
+	"fmt"
+	"io"
 )
 
 // A Pipe represents a communication interface with r2 that will be used to
@@ -33,22 +34,35 @@ type CloseDelegate func(*Pipe) error
 // is the case when r2pipe is called within r2.
 
 func NewPipe(args ...string) (*Pipe, error) {
-	args = append(args, "-q0")
+	file := args[len(args) - 1]
+	args[len(args) - 1] = "-q0"
+	args = append(args, file)
 	r2cmd := exec.Command("r2", args...)
 	stdin, err := r2cmd.StdinPipe()
 	if err != nil {
+		fmt.Println("Error Stdin")
 		return nil, err
 	}
 	stdout, err := r2cmd.StdoutPipe()
 	if err != nil {
+		fmt.Println("Error Stdout")
 		return nil, err
 	}
 	if err := r2cmd.Start(); err != nil {
+		fmt.Println("Error Start")
 		return nil, err
 	}
 	// Read initial data
-	if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil {
-		return nil, err
+	for i := 0; ; i++ {
+		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil {
+			if i < 4 {
+				fmt.Println("Error Reader")
+				return nil, err
+			}
+			time.Sleep(time.Second)
+		} else {
+			break
+		}
 	}
 
 	r2p := &Pipe{
