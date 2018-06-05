@@ -4,5 +4,5 @@ CURDIR=$(pwd)
 bash "$SCRIPTDIR/import-tests.sh"
 make
 find "$CURDIR/exported" -type f | while read FNAME; do
-	"$CURDIR/bin/r2r" "--wdir" "./radare2-regressions" "$FNAME"
+	"$CURDIR/bin/r2r" "--debug" "--wdir" "./radare2-regressions" "$FNAME"
 done
