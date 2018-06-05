@@ -26,67 +26,11 @@
 
 package main
 
-type R2Channel chan *R2Test
-type R2Results chan *TestResult
 
-type TestsOptions struct {
-	Debug bool
-}
+import ("fmt")
 
-type R2Pool struct {
-	Size int
-	Tests R2Channel
-	Results R2Results
-	Options *TestsOptions
-}
-
-func R2Routine(pool *R2Pool, done chan bool) {
-	for {
-		select {
-		case test := <- pool.Tests:
-			pool.Options.Println("Executing", test.Name)
-			pool.Results <- test.Exec()
-		default:
-			done <- true
-			return
-		}
+func (options TestsOptions) Println(a ...interface{}) {
+	if options.Debug {
+		fmt.Println(a...)
 	}
-}
-
-func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
-	success := true
-	tests := regressions.Tests
-	done := make(chan bool, pool.Size)
-	length := len(tests)
-	pool.Tests = make(R2Channel, length)
-	pool.Results = make(R2Results, length)
-
-	pool.Options.Println("Preparing", length, "tests..")
-
-	for index := range tests {
-		pool.Tests <- &tests[index]
-	}
-
-	pool.Options.Println("Poolsize:", pool.Size)
-
-	for i := 0; i < pool.Size; i++ {
-		go R2Routine(&pool, done)
-	}
-
-	pool.Options.Println("Waiting end of tests...")
-
-	for i := 0; i < pool.Size; i++ {
-		<- done
-	}
-	for i := 0; i < length; i++ {
-		result := <- pool.Results
-		if result.Print(true) {
-			success = false
-		}
-	}
-	return success
-}
-
-func NewR2Pool(size int, options *TestsOptions) *R2Pool {
-	return &R2Pool{size, nil, nil, options}
 }

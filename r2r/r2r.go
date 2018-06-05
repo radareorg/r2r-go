@@ -53,8 +53,11 @@ func loadJSON(fpath string) R2RegressionTest {
 }
 
 var MAX_JOBS int = runtime.NumCPU()
+var options TestsOptions = TestsOptions{
+	false,
+}
 
-var Options = map[string]ArgOption {
+var ArgsOptions = map[string]ArgOption {
 	"--jobs": {
 		"defines how many jobs can be spawn. (if n < 1 then will be used the number of CPUs).",
 		1,
@@ -77,11 +80,18 @@ var Options = map[string]ArgOption {
 			}
 		},
 	},
+	"--debug": {
+		"enables debug output",
+		0,
+		func(value... string) {
+			options.Debug = true
+		},
+	},
 }
 
 func usage() {
 	fmt.Println("Usage: ")
-	for k, v := range Options { 
+	for k, v := range ArgsOptions { 
 		fmt.Printf("%8s | %s (%d args)\n", k, v.Description, v.Argc)
 	}
 	os.Exit(1)
@@ -103,7 +113,7 @@ func main() {
 		if arg == "--help" {
 			usage()
 		}
-		pair, ok := Options[arg]
+		pair, ok := ArgsOptions[arg]
 		if ok {
 			max := i + pair.Argc + 1
 			if max < Argc {
@@ -121,8 +131,10 @@ func main() {
 	if filepath == "--help" {
 		usage()
 	}
+	options.Println("Loading", filepath)
+
 	tests := loadJSON(filepath)
-	pool := NewR2Pool(4)
+	pool := NewR2Pool(4, &options)
 	if !pool.PerformTests(&tests) {
 		os.Exit(1)
 	}
