@@ -52,9 +52,9 @@ func loadJSON(fpath string) R2RegressionTest {
 	return tests
 }
 
-var MAX_JOBS int = runtime.NumCPU()
 var options TestsOptions = TestsOptions{
 	false,
+	runtime.NumCPU(),
 }
 
 var ArgsOptions = map[string]ArgOption {
@@ -67,7 +67,7 @@ var ArgsOptions = map[string]ArgOption {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			MAX_JOBS = s
+			options.Jobs = s
 		},
 	},
 	"--wdir": {
@@ -134,7 +134,7 @@ func main() {
 	options.Println("Loading", filepath)
 
 	tests := loadJSON(filepath)
-	pool := NewR2Pool(4, &options)
+	pool := NewR2Pool(&options)
 	if !pool.PerformTests(&tests) {
 		os.Exit(1)
 	}
