@@ -31,10 +31,10 @@ type R2Results chan *TestResult
 
 type TestsOptions struct {
 	Debug bool
+	Jobs int
 }
 
 type R2Pool struct {
-	Size int
 	Tests R2Channel
 	Results R2Results
 	Options *TestsOptions
@@ -46,6 +46,7 @@ func R2Routine(pool *R2Pool, done chan bool) {
 		case test := <- pool.Tests:
 			pool.Options.Println("Executing", test.Name)
 			pool.Results <- test.Exec()
+			pool.Options.Println("Result returned.")
 		default:
 			done <- true
 			return
@@ -56,7 +57,7 @@ func R2Routine(pool *R2Pool, done chan bool) {
 func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 	success := true
 	tests := regressions.Tests
-	done := make(chan bool, pool.Size)
+	done := make(chan bool, pool.Options.Jobs)
 	length := len(tests)
 	pool.Tests = make(R2Channel, length)
 	pool.Results = make(R2Results, length)
@@ -67,15 +68,15 @@ func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 		pool.Tests <- &tests[index]
 	}
 
-	pool.Options.Println("Poolsize:", pool.Size)
+	pool.Options.Println("Poolsize:", pool.Options.Jobs)
 
-	for i := 0; i < pool.Size; i++ {
+	for i := 0; i < pool.Options.Jobs; i++ {
 		go R2Routine(&pool, done)
 	}
 
 	pool.Options.Println("Waiting end of tests...")
 
-	for i := 0; i < pool.Size; i++ {
+	for i := 0; i < pool.Options.Jobs; i++ {
 		<- done
 	}
 	for i := 0; i < length; i++ {
@@ -87,6 +88,6 @@ func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 	return success
 }
 
-func NewR2Pool(size int, options *TestsOptions) *R2Pool {
-	return &R2Pool{size, nil, nil, options}
+func NewR2Pool(options *TestsOptions) *R2Pool {
+	return &R2Pool{nil, nil, options}
 }
