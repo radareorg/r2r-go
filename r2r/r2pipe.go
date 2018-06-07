@@ -11,6 +11,7 @@ import (
 	"time"
 	"fmt"
 	"io"
+	"os"
 )
 
 // A Pipe represents a communication interface with r2 that will be used to
@@ -50,12 +51,13 @@ func NewPipe(args ...string) (*Pipe, error) {
 	}
 	if err := r2cmd.Start(); err != nil {
 		fmt.Println("Error Start")
+		os.Exit(1)
 		return nil, err
 	}
 	// Read initial data
 	for i := 0; ; i++ {
 		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil {
-			if i < 4 {
+			if i > 4 {
 				fmt.Println("Error Reader")
 				return nil, err
 			}

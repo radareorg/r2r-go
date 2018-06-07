@@ -32,7 +32,9 @@ import (
 	"io/ioutil"
 	"strings"
 	"strconv"
+	"regexp"
 	"bufio"
+	"path"
 	"fmt"
 	"os"
 )
@@ -120,6 +122,56 @@ func populate(test *R2Test, str string, scanner *bufio.Scanner) bool {
 	return false;
 }
 
+func populate_asm(name string, test *R2Test, str string, scanner *bufio.Scanner) bool {
+	if len(str) < 1 {
+		return false
+	}
+	args := strings.Split(name, "_")
+	re := regexp.MustCompile("\\w+|\".+\"")
+	found := re.FindAllString(str, -1)
+	cmds := found[0]
+	asm := found[1]
+	hex := found[2]
+	var skip string = "0x0"
+	if len(found) > 3 {
+		skip = found[3]
+	}
+	if len(cmds) < 4 {
+		if len(args) == 1 {
+			test.Args = "-a " + args[0]
+		} else if len(args) == 2 {
+			test.Args = "-a " + args[0] + " -b " + args[1]
+		} else if len(args) == 3 {
+			test.Args = "-a " + args[0] + " -e asm.cpu=" + args[1] + " -b " + args[2]
+		} else {
+			return false
+		}
+		test.Broken = false
+		if skip != "0x0" {		
+			test.Commands = append(test.Commands, "s " + skip)
+		}
+		for i := 0; i < len(cmds); i++ {
+			if cmds[i] == 'a' {
+				test.Commands = append(test.Commands, "pa " + asm)
+				test.Expected += hex + "\n"
+			} else if cmds[i] == 'd' {
+				test.Commands = append(test.Commands, "pad " + hex)
+				test.Expected += asm[1 : len(asm) - 1] + "\n"
+			} else if cmds[i] == 'B' {
+				test.Broken = true
+			} else if cmds[i] == 'E' {
+				test.Args += " -e cfg.bigendian=true"
+			} else {
+				fmt.Println("Unknown flag:", cmds[i])
+			}
+		}
+		test.File = "-"
+		test.Name = name + ": " + str
+		return true
+	}
+	return false
+}
+
 func build(infilepath string, outfilepath string) {
 	var skipone bool = false
 	var special string
@@ -131,13 +183,14 @@ func build(infilepath string, outfilepath string) {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
     }
+	fmt.Println("Open:", path.Base(infilepath))
     defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for skipone || scanner.Scan() {
 		str = scanner.Text()
 		
 		if strings.Compare(str, "RUN") == 0 {
-//			fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
+			// fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
 			regr.Tests = append(regr.Tests, e)
 			e = R2Test{"","","", make([]string, 0),"", false}
 			skipone = false
@@ -164,14 +217,23 @@ func build(infilepath string, outfilepath string) {
 			}
 			populate(&e, special[:len(special) - 1], scanner)
 		} else {
-			populate(&e, str, scanner)
+			if strings.Contains(infilepath, "/asm/") && populate_asm(path.Base(infilepath), &e, str, scanner) {
+				regr.Tests = append(regr.Tests, e)
+				e = R2Test{"","","", make([]string, 0),"", false}
+			} else if !strings.Contains(infilepath, "/asm/") && !populate(&e, str, scanner) {
+				fmt.Println("Unknown:", str)
+			}
 			skipone = false
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 	}
-	regr.Type = "cmd"
+	if strings.Contains(infilepath, "/asm/") {
+		regr.Type = "asm"
+	} else {
+		regr.Type = "cmd"
+	}
 	bytes, err := json.Marshal(regr)
     if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())

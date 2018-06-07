@@ -13,10 +13,3 @@ find radare2-regressions/new/db/ -type f | while read FNAME; do
 	NAME=$(basename "$FNAME")
 	./bin/r2r-build "$FNAME" "./exported/$NAME.json" || exit 1
 done
-
-DIR=$(pwd)
-make
-cd "radare2-regressions"
-find "$DIR/exported" -type f | while read FNAME; do
-	"$DIR/bin/r2r" "$FNAME"
-done
