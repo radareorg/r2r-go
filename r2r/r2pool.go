@@ -31,6 +31,8 @@ type R2Results chan *TestResult
 
 type TestsOptions struct {
 	Debug bool
+	Sequence bool
+	ErrorsOnly bool
 	Jobs int
 }
 
@@ -45,7 +47,7 @@ func R2Routine(pool *R2Pool, done chan bool) {
 		select {
 		case test := <- pool.Tests:
 			pool.Options.Println("Executing", test.Name)
-			pool.Results <- test.Exec()
+			pool.Results <- test.Exec(pool.Options)
 			pool.Options.Println("Result returned.")
 		default:
 			done <- true
@@ -81,7 +83,10 @@ func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 	}
 	for i := 0; i < length; i++ {
 		result := <- pool.Results
-		if result.Print(true) {
+		if !pool.Options.Sequence {
+			result.Print(true)
+		}
+		if !result.Success && !result.Test.Broken {
 			success = false
 		}
 	}

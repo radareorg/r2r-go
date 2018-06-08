@@ -51,24 +51,30 @@ type TestResult struct {
 	Success bool
 	Error bool
 	Test *R2Test
+	Options *TestsOptions
 }
 
 func (result TestResult) Print(printall bool) bool {
 	if result.Error {
 		fmt.Println("[XX]", result.Test.Name, "something went really wrong.")
+		result.Options.Println("r2", result.Test.Args, result.Test.File)
+		result.Options.Println(strings.Join(result.Test.Commands,"; "))
 		fmt.Println(result.Message)
 	} else if result.Success {
 		if result.Test.Broken {
 			fmt.Println("[FX]", result.Test.Name)
-		} else if printall {
+		} else if printall && !result.Options.ErrorsOnly {
 			fmt.Println("[OK]", result.Test.Name)
 		}
 		return true
 	} else if result.Test.Broken {
-		fmt.Println("[BR]", result.Test.Name)
+		if !result.Options.ErrorsOnly {
+			fmt.Println("[BR]", result.Test.Name)
+		}
 		return true
 	} else {
-		fmt.Println("[XX]", result.Test.Name, result.Test.File, result.Test.Args)
+		fmt.Println("[XX]", result.Test.Name)
+		result.Options.Println("r2", result.Test.Args, result.Test.File)
 		fmt.Println(result.Message)
 	}
 	return false
@@ -88,8 +94,8 @@ type R2RegressionTest struct {
 	Tests []R2Test `json:"tests"`
 }
 
-func (test R2Test) Exec() *TestResult {
-	result := &TestResult{"", false, false, &test}
+func (test R2Test) Exec(options *TestsOptions) *TestResult {
+	result := &TestResult{"", false, false, &test, options}
 	result.Success = true
 	result.Error = false
 	var args []string = strings.Split(test.Args, " ")
@@ -111,6 +117,9 @@ func (test R2Test) Exec() *TestResult {
 	if test.Commands != nil {
 		var buffer bytes.Buffer
 		for _, command := range test.Commands {
+			if command == "q" {
+				continue
+			}
 			output, err := instance.Cmd(command)
 			if err != nil {
 				result.Message = fmt.Sprintf("Error: %s", err.Error())
@@ -133,6 +142,9 @@ func (test R2Test) Exec() *TestResult {
 			result.Message = diffs
 			result.Success = false
 		}
+	}
+	if options.Sequence {
+		result.Print(true)
 	}
 	return result
 }

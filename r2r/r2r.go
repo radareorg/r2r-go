@@ -54,6 +54,8 @@ func loadJSON(fpath string) R2RegressionTest {
 
 var options TestsOptions = TestsOptions{
 	false,
+	false,
+	false,
 	runtime.NumCPU(),
 }
 
@@ -87,6 +89,20 @@ var ArgsOptions = map[string]ArgOption {
 			options.Debug = true
 		},
 	},
+	"--seq": {
+		"enables sequence output",
+		0,
+		func(value... string) {
+			options.Sequence = true
+		},
+	},
+	"--errors-only": {
+		"enables only errors (and fixed) output",
+		0,
+		func(value... string) {
+			options.ErrorsOnly = true
+		},
+	},
 }
 
 func usage() {
@@ -110,7 +126,7 @@ func main() {
 	Argc := len(os.Args)
 	for i := 1; i < (Argc - 1); i++ {
 		arg := string(os.Args[i])
-		if arg == "--help" {
+		if arg == "--help" || arg == "-h" {
 			usage()
 		}
 		pair, ok := ArgsOptions[arg]
@@ -128,10 +144,10 @@ func main() {
 		}
 	}
 	filepath := string(os.Args[Argc - 1])
-	if filepath == "--help" {
+	if filepath == "--help" || filepath == "-h" {
 		usage()
 	}
-	options.Println("Loading", filepath)
+	fmt.Println("Executing", filepath)
 
 	tests := loadJSON(filepath)
 	pool := NewR2Pool(&options)
