@@ -152,7 +152,7 @@ func populate_asm(name string, test *R2Test, str string, scanner *bufio.Scanner)
 		}
 		for i := 0; i < len(cmds); i++ {
 			if cmds[i] == 'a' {
-				test.Commands = append(test.Commands, "pa " + asm)
+				test.Commands = append(test.Commands, "pa " + asm[1 : len(asm) - 1])
 				test.Expected += hex + "\n"
 			} else if cmds[i] == 'd' {
 				test.Commands = append(test.Commands, "pad " + hex)
