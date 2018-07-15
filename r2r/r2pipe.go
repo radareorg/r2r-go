@@ -55,15 +55,11 @@ func NewPipe(args ...string) (*Pipe, error) {
 		return nil, err
 	}
 	// Read initial data
-	for i := 0; ; i++ {
-		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil {
-			if i > 4 {
-				fmt.Println("Error Reader")
-				return nil, err
-			}
-			time.Sleep(time.Second)
-		} else {
-			break
+	if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
+		time.Sleep(4 * time.Second)
+		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
+			fmt.Println("Error Reader")
+			return nil, err
 		}
 	}
 
