@@ -39,22 +39,27 @@ func NewPipe(args ...string) (*Pipe, error) {
 	args[len(args) - 1] = "-q0"
 	args = append(args, file)
 	r2cmd := exec.Command("r2", args...)
+	fmt.Println("In..")
 	stdin, err := r2cmd.StdinPipe()
 	if err != nil {
 		fmt.Println("Error Stdin")
 		return nil, err
 	}
+	fmt.Println("Out..")
 	stdout, err := r2cmd.StdoutPipe()
 	if err != nil {
 		fmt.Println("Error Stdout")
 		return nil, err
 	}
+	fmt.Println("Start..")
 	if err := r2cmd.Start(); err != nil {
 		fmt.Println("Error Start")
 		os.Exit(1)
 		return nil, err
 	}
 	// Read initial data
+
+	fmt.Println("Reader")
 	if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
 		time.Sleep(4 * time.Second)
 		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
@@ -63,6 +68,7 @@ func NewPipe(args ...string) (*Pipe, error) {
 		}
 	}
 
+	fmt.Println("Ready..")
 	r2p := &Pipe{
 		File:   args[len(args) - 2],
 		r2cmd:  r2cmd,

@@ -31,16 +31,6 @@ import (
 	"os"
 )
 
-func exists(name string) bool {
-	_, err := os.Stat(name)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
-}
-
 func main() {
 	if len(os.Args) != 3 {
 		fmt.Println(os.Args[0], "<path/regression/test> <file.json>")

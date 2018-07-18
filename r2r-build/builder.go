@@ -53,6 +53,16 @@ type R2RegressionTest struct {
 	Tests []R2Test `json:"tests"`
 }
 
+func exists(name string) bool {
+	_, err := os.Stat(name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
 func decode64(encoded string) string {
 	decoded, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
@@ -231,10 +241,11 @@ func build(infilepath string, outfilepath string) {
 	}
 	if strings.Contains(infilepath, "/asm/") {
 		regr.Type = "asm"
+		strings.Replace(outfilepath, ".json", ".asm.json", -1)
 	} else {
 		regr.Type = "cmd"
 	}
-	bytes, err := json.Marshal(regr)
+	bytes, err := json.MarshalIndent(regr, "", "    ")
     if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)

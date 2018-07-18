@@ -48,7 +48,11 @@ func loadJSON(fpath string) R2RegressionTest {
 		os.Exit(1)
 	}
 	var tests R2RegressionTest
-	json.Unmarshal(raw, &tests)
+	
+	if err := json.Unmarshal(raw, &tests); err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err.Error())
+		os.Exit(1)
+	}
 	return tests
 }
 
@@ -108,7 +112,7 @@ var ArgsOptions = map[string]ArgOption {
 func usage() {
 	fmt.Println("Usage: ")
 	for k, v := range ArgsOptions { 
-		fmt.Printf("%8s | %s (%d args)\n", k, v.Description, v.Argc)
+		fmt.Printf("%15s | %s (%d args)\n", k, v.Description, v.Argc)
 	}
 	os.Exit(1)
 }
