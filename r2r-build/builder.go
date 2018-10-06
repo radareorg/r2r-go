@@ -193,7 +193,7 @@ func build(infilepath string, outfilepath string) {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
     }
-	fmt.Println("Open:", path.Base(infilepath))
+    fmt.Println("Open:", path.Base(infilepath))
     defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for skipone || scanner.Scan() {

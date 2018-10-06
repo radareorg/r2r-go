@@ -29,6 +29,7 @@ package main
 type R2Channel chan *R2Test
 type R2Results chan *TestResult
 
+
 type TestsOptions struct {
 	Debug bool
 	Sequence bool

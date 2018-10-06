@@ -1,17 +1,48 @@
-// radare - LGPL - Copyright 2018 - deroad
+// radare - LGPL - Copyright 2015 - nibble
 
+/*
+Package r2pipe allows to call r2 commands from Go. A simple hello world would
+look like the following snippet:
+
+	package main
+
+	import (
+		"fmt"
+
+		"github.com/radare/r2pipe-go"
+	)
+
+	func main() {
+		r2p, err := r2pipe.NewPipe("malloc://256")
+		if err != nil {
+			panic(err)
+		}
+		defer r2p.Close()
+
+		_, err = r2p.Cmd("w Hello World")
+		if err != nil {
+			panic(err)
+		}
+		buf, err := r2p.Cmd("ps")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(buf)
+	}
+*/
 package main
 
 import (
-	"encoding/json"
-	"os/exec"
-	"strings"
 	"bufio"
 	"bytes"
-	"time"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
 // A Pipe represents a communication interface with r2 that will be used to
@@ -33,44 +64,59 @@ type CloseDelegate func(*Pipe) error
 // load the provided file or URI. If file is an empty string, the env vars
 // R2PIPE_{IN,OUT} will be used as file descriptors for input and output, this
 // is the case when r2pipe is called within r2.
+func NewPipe(file string) (*Pipe, error) {
+	if file == "" {
+		return newPipeFd()
+	}
+	return newPipeCmd(file)
+}
 
-func NewPipe(args ...string) (*Pipe, error) {
-	file := args[len(args) - 1]
-	args[len(args) - 1] = "-q0"
-	args = append(args, file)
-	r2cmd := exec.Command("r2", args...)
-	fmt.Println("In..")
+func newPipeFd() (*Pipe, error) {
+	r2pipeIn := os.Getenv("R2PIPE_IN")
+	r2pipeOut := os.Getenv("R2PIPE_OUT")
+	if r2pipeIn == "" || r2pipeOut == "" {
+		return nil, errors.New("missing R2PIPE_{IN,OUT} vars")
+	}
+	r2pipeInFd, err := strconv.Atoi(r2pipeIn)
+	if err != nil {
+		return nil, err
+	}
+	r2pipeOutFd, err := strconv.Atoi(r2pipeOut)
+	if err != nil {
+		return nil, err
+	}
+	stdout := os.NewFile(uintptr(r2pipeInFd), "R2PIPE_IN")
+	stdin := os.NewFile(uintptr(r2pipeOutFd), "R2PIPE_OUT")
+
+	r2p := &Pipe{
+		File:   "",
+		r2cmd:  nil,
+		stdin:  stdin,
+		stdout: stdout,
+	}
+	return r2p, nil
+}
+
+func newPipeCmd(file string) (*Pipe, error) {
+	r2cmd := exec.Command("radare2", "-q0", file)
 	stdin, err := r2cmd.StdinPipe()
 	if err != nil {
-		fmt.Println("Error Stdin")
 		return nil, err
 	}
-	fmt.Println("Out..")
 	stdout, err := r2cmd.StdoutPipe()
 	if err != nil {
-		fmt.Println("Error Stdout")
 		return nil, err
 	}
-	fmt.Println("Start..")
 	if err := r2cmd.Start(); err != nil {
-		fmt.Println("Error Start")
-		os.Exit(1)
 		return nil, err
 	}
 	// Read initial data
-
-	fmt.Println("Reader")
-	if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
-		time.Sleep(4 * time.Second)
-		if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil && err != io.EOF {
-			fmt.Println("Error Reader")
-			return nil, err
-		}
+	if _, err := bufio.NewReader(stdout).ReadString('\x00'); err != nil {
+		return nil, err
 	}
 
-	fmt.Println("Ready..")
 	r2p := &Pipe{
-		File:   args[len(args) - 2],
+		File:   file,
 		r2cmd:  r2cmd,
 		stdin:  stdin,
 		stdout: stdout,
@@ -105,7 +151,7 @@ func (r2p *Pipe) Cmd(cmd string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimRight(buf, "\x00"), nil
+	return strings.TrimRight(buf, "\n\x00"), nil
 }
 
 // Cmdj acts like Cmd but interprets the output of the command as json. It
@@ -118,7 +164,7 @@ func (r2p *Pipe) Cmdj(cmd string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	buf = bytes.TrimRight(buf, "\x00")
+	buf = bytes.TrimRight(buf, "\n\x00")
 	var output interface{}
 	if err := json.Unmarshal(buf, &output); err != nil {
 		return nil, err
@@ -139,3 +185,4 @@ func (r2p *Pipe) Close() error {
 	}
 	return r2p.r2cmd.Wait()
 }
+
