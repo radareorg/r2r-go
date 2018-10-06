@@ -121,7 +121,7 @@ func (r2p *Pipe) Cmd(cmd string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimRight(buf, "\n\x00"), nil
+	return strings.TrimRight(buf, "\x00"), nil
 }
 
 // Cmdj acts like Cmd but interprets the output of the command as json. It
