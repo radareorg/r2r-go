@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *
@@ -27,11 +27,11 @@
 package main
 
 import (
-	"github.com/pmezard/go-difflib/difflib"
-	"strings"
 	"bytes"
 	"fmt"
+	"github.com/pmezard/go-difflib/difflib"
 	"os"
+	"strings"
 )
 
 func diff(str1, str2 string) string {
@@ -49,8 +49,8 @@ func diff(str1, str2 string) string {
 type TestResult struct {
 	Message string
 	Success bool
-	Error bool
-	Test *R2Test
+	Error   bool
+	Test    *R2Test
 	Options *TestsOptions
 }
 
@@ -58,7 +58,7 @@ func (result TestResult) Print(printall bool) bool {
 	if result.Error {
 		fmt.Println("[XX]", result.Test.Name, "something went really wrong.")
 		result.Options.Println("r2", result.Test.Args, result.Test.File)
-		result.Options.Println(strings.Join(result.Test.Commands,"; "))
+		result.Options.Println(strings.Join(result.Test.Commands, "; "))
 		fmt.Println(result.Message)
 	} else if result.Success {
 		if result.Test.Broken {
@@ -81,16 +81,16 @@ func (result TestResult) Print(printall bool) bool {
 }
 
 type R2Test struct {
-	Name string `json:"name"`
-	File string `json:"file"`
-	Args string `json:"args"`
+	Name     string   `json:"name"`
+	File     string   `json:"file"`
+	Args     string   `json:"args"`
 	Commands []string `json:"commands"`
-	Expected string `json:"expected"`
-	Broken bool `json:"broken"`
+	Expected string   `json:"expected"`
+	Broken   bool     `json:"broken"`
 }
 
 type R2RegressionTest struct {
-	Type string `json:"type"`
+	Type  string   `json:"type"`
 	Tests []R2Test `json:"tests"`
 }
 
@@ -100,7 +100,7 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 	result.Error = false
 	var args []string = strings.Split(test.Args, " ")
 	args = append(args, test.File)
-	instance, err := NewPipe(test.File)
+	instance, err := NewPipe(args...)
 	if err != nil {
 		result.Message = fmt.Sprintf("Error: %s", err.Error())
 		result.Success = false
@@ -109,9 +109,9 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 			result.Message = fmt.Sprintf("Error: File %s doesn't exists", test.File)
 			result.Success = false
 			result.Error = true
-			return result;
+			return result
 		}
-		return result;
+		return result
 	}
 	if test.Commands != nil {
 		var buffer bytes.Buffer
@@ -125,7 +125,7 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 				result.Message = fmt.Sprintf("Error: %s", err.Error())
 				result.Success = false
 				result.Error = true
-				return result;
+				return result
 			}
 			t := string(output)
 			if len(t) > 0 {
@@ -151,4 +151,3 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 	fmt.Println("It's done jim.")
 	return result
 }
-

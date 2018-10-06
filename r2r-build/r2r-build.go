@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *
@@ -26,8 +26,9 @@
 
 package main
 
-
-import ("fmt")
+import (
+	"fmt"
+)
 
 func (options TestsOptions) Println(a ...interface{}) {
 	if options.Debug {

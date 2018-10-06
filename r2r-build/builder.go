@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *
@@ -27,29 +27,29 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
-	"strings"
-	"strconv"
-	"regexp"
-	"bufio"
-	"path"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 type R2Test struct {
-	Name string `json:"name"`
-	File string `json:"file"`
-	Args string `json:"args"`
+	Name     string   `json:"name"`
+	File     string   `json:"file"`
+	Args     string   `json:"args"`
 	Commands []string `json:"commands"`
-	Expected string `json:"expected"`
-	Broken bool `json:"broken"`
+	Expected string   `json:"expected"`
+	Broken   bool     `json:"broken"`
 }
 
 type R2RegressionTest struct {
-	Type string `json:"type"`
+	Type  string   `json:"type"`
 	Tests []R2Test `json:"tests"`
 }
 
@@ -91,7 +91,7 @@ func populate(test *R2Test, str string, scanner *bufio.Scanner) bool {
 	} else if strings.HasPrefix(str, "ARGS=") {
 		test.Args = str[5:]
 		return true
-	}  else if strings.HasPrefix(str, "FILE=") {
+	} else if strings.HasPrefix(str, "FILE=") {
 		test.File = str[5:]
 		for strings.HasPrefix(test.File, "../") {
 			test.File = test.File[3:]
@@ -129,7 +129,7 @@ func populate(test *R2Test, str string, scanner *bufio.Scanner) bool {
 	} else {
 		fmt.Println("Unknown:", str)
 	}
-	return false;
+	return false
 }
 
 func populate_asm(name string, test *R2Test, str string, scanner *bufio.Scanner) bool {
@@ -157,16 +157,16 @@ func populate_asm(name string, test *R2Test, str string, scanner *bufio.Scanner)
 			return false
 		}
 		test.Broken = false
-		if skip != "0x0" {		
-			test.Commands = append(test.Commands, "s " + skip)
+		if skip != "0x0" {
+			test.Commands = append(test.Commands, "s "+skip)
 		}
 		for i := 0; i < len(cmds); i++ {
 			if cmds[i] == 'a' {
-				test.Commands = append(test.Commands, "pa " + asm[1 : len(asm) - 1])
+				test.Commands = append(test.Commands, "pa "+asm[1:len(asm)-1])
 				test.Expected += hex + "\n"
 			} else if cmds[i] == 'd' {
-				test.Commands = append(test.Commands, "pad " + hex)
-				test.Expected += asm[1 : len(asm) - 1] + "\n"
+				test.Commands = append(test.Commands, "pad "+hex)
+				test.Expected += asm[1:len(asm)-1] + "\n"
 			} else if cmds[i] == 'B' {
 				test.Broken = true
 			} else if cmds[i] == 'E' {
@@ -187,22 +187,22 @@ func build(infilepath string, outfilepath string) {
 	var special string
 	var str string
 	var regr R2RegressionTest
-	var e R2Test = R2Test{"","","", make([]string, 0),"", false}
+	var e R2Test = R2Test{"", "", "", make([]string, 0), "", false}
 	file, err := os.Open(infilepath)
-    if err != nil {
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
-    }
-    fmt.Println("Open:", path.Base(infilepath))
-    defer file.Close()
+	}
+	fmt.Println("Open:", path.Base(infilepath))
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for skipone || scanner.Scan() {
 		str = scanner.Text()
-		
+
 		if strings.Compare(str, "RUN") == 0 {
 			// fmt.Println(fmt.Sprintf(`Added: "%s"`, e.Name))
 			regr.Tests = append(regr.Tests, e)
-			e = R2Test{"","","", make([]string, 0),"", false}
+			e = R2Test{"", "", "", make([]string, 0), "", false}
 			skipone = false
 		} else if strings.HasPrefix(str, "CMDS=<<EXPECT") {
 			special = "CMDS=" + str[13:]
@@ -214,7 +214,7 @@ func build(infilepath string, outfilepath string) {
 				}
 				special += str + "\n"
 			}
-			populate(&e, special[:len(special) - 1], scanner)
+			populate(&e, special[:len(special)-1], scanner)
 		} else if strings.HasPrefix(str, "EXPECT=<<RUN") {
 			special = "EXPECT=" + str[12:]
 			skipone = true
@@ -225,11 +225,11 @@ func build(infilepath string, outfilepath string) {
 				}
 				special += str + "\n"
 			}
-			populate(&e, special[:len(special) - 1], scanner)
+			populate(&e, special[:len(special)-1], scanner)
 		} else {
 			if strings.Contains(infilepath, "/asm/") && populate_asm(path.Base(infilepath), &e, str, scanner) {
 				regr.Tests = append(regr.Tests, e)
-				e = R2Test{"","","", make([]string, 0),"", false}
+				e = R2Test{"", "", "", make([]string, 0), "", false}
 			} else if !strings.Contains(infilepath, "/asm/") && !populate(&e, str, scanner) {
 				fmt.Println("Unknown:", str)
 			}
@@ -246,12 +246,12 @@ func build(infilepath string, outfilepath string) {
 		regr.Type = "cmd"
 	}
 	bytes, err := json.MarshalIndent(regr, "", "    ")
-    if err != nil {
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
-    }
-    err = ioutil.WriteFile(outfilepath, bytes, 0644)
-    if err != nil {
+	}
+	err = ioutil.WriteFile(outfilepath, bytes, 0644)
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
-    }
+	}
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *
@@ -29,16 +29,15 @@ package main
 type R2Channel chan *R2Test
 type R2Results chan *TestResult
 
-
 type TestsOptions struct {
-	Debug bool
-	Sequence bool
+	Debug      bool
+	Sequence   bool
 	ErrorsOnly bool
-	Jobs int
+	Jobs       int
 }
 
 type R2Pool struct {
-	Tests R2Channel
+	Tests   R2Channel
 	Results R2Results
 	Options *TestsOptions
 }
@@ -46,7 +45,7 @@ type R2Pool struct {
 func R2Routine(pool *R2Pool, done chan bool) {
 	for {
 		select {
-		case test := <- pool.Tests:
+		case test := <-pool.Tests:
 			pool.Options.Println("Executing", test.Name)
 			pool.Results <- test.Exec(pool.Options)
 			pool.Options.Println("Result returned.")
@@ -80,10 +79,10 @@ func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 	pool.Options.Println("Waiting end of tests...")
 
 	for i := 0; i < pool.Options.Jobs; i++ {
-		<- done
+		<-done
 	}
 	for i := 0; i < length; i++ {
-		result := <- pool.Results
+		result := <-pool.Results
 		if !pool.Options.Sequence {
 			result.Print(true)
 		}

@@ -1,35 +1,5 @@
 // radare - LGPL - Copyright 2015 - nibble
 
-/*
-Package r2pipe allows to call r2 commands from Go. A simple hello world would
-look like the following snippet:
-
-	package main
-
-	import (
-		"fmt"
-
-		"github.com/radare/r2pipe-go"
-	)
-
-	func main() {
-		r2p, err := r2pipe.NewPipe("malloc://256")
-		if err != nil {
-			panic(err)
-		}
-		defer r2p.Close()
-
-		_, err = r2p.Cmd("w Hello World")
-		if err != nil {
-			panic(err)
-		}
-		buf, err := r2p.Cmd("ps")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(buf)
-	}
-*/
 package main
 
 import (
@@ -64,11 +34,8 @@ type CloseDelegate func(*Pipe) error
 // load the provided file or URI. If file is an empty string, the env vars
 // R2PIPE_{IN,OUT} will be used as file descriptors for input and output, this
 // is the case when r2pipe is called within r2.
-func NewPipe(file string) (*Pipe, error) {
-	if file == "" {
-		return newPipeFd()
-	}
-	return newPipeCmd(file)
+func NewPipe(args ...string) (*Pipe, error) {
+	return newPipeCmd(args...)
 }
 
 func newPipeFd() (*Pipe, error) {
@@ -97,8 +64,11 @@ func newPipeFd() (*Pipe, error) {
 	return r2p, nil
 }
 
-func newPipeCmd(file string) (*Pipe, error) {
-	r2cmd := exec.Command("radare2", "-q0", file)
+func newPipeCmd(args ...string) (*Pipe, error) {
+	file := args[len(args)-1]
+	args[len(args)-1] = "-q0"
+	args = append(args, file)
+	r2cmd := exec.Command("radare2", args...)
 	stdin, err := r2cmd.StdinPipe()
 	if err != nil {
 		return nil, err
@@ -185,4 +155,3 @@ func (r2p *Pipe) Close() error {
 	}
 	return r2p.r2cmd.Wait()
 }
-

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Giovanni Dante Grazioli <deroad@libero.it>
  * All rights reserved.
  *
@@ -28,17 +28,17 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strconv"
-	"fmt"
-	"os"
 )
 
 type ArgOption struct {
 	Description string
-	Argc int
-	Callback func(... string)
+	Argc        int
+	Callback    func(...string)
 }
 
 func loadJSON(fpath string) R2RegressionTest {
@@ -48,7 +48,7 @@ func loadJSON(fpath string) R2RegressionTest {
 		os.Exit(1)
 	}
 	var tests R2RegressionTest
-	
+
 	if err := json.Unmarshal(raw, &tests); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 		os.Exit(1)
@@ -63,11 +63,11 @@ var options TestsOptions = TestsOptions{
 	runtime.NumCPU(),
 }
 
-var ArgsOptions = map[string]ArgOption {
+var ArgsOptions = map[string]ArgOption{
 	"--jobs": {
 		"defines how many jobs can be spawn. (if n < 1 then will be used the number of CPUs).",
 		1,
-		func(value... string) {
+		func(value ...string) {
 			s, err := strconv.Atoi(value[0])
 			if err != nil || s < 1 {
 				fmt.Println(err)
@@ -79,7 +79,7 @@ var ArgsOptions = map[string]ArgOption {
 	"--wdir": {
 		"changes the current working directory",
 		1,
-		func(value... string) {
+		func(value ...string) {
 			if err := os.Chdir(value[0]); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -89,21 +89,21 @@ var ArgsOptions = map[string]ArgOption {
 	"--debug": {
 		"enables debug output",
 		0,
-		func(value... string) {
+		func(value ...string) {
 			options.Debug = true
 		},
 	},
 	"--seq": {
 		"enables sequence output",
 		0,
-		func(value... string) {
+		func(value ...string) {
 			options.Sequence = true
 		},
 	},
 	"--errors-only": {
 		"enables only errors (and fixed) output",
 		0,
-		func(value... string) {
+		func(value ...string) {
 			options.ErrorsOnly = true
 		},
 	},
@@ -111,7 +111,7 @@ var ArgsOptions = map[string]ArgOption {
 
 func usage() {
 	fmt.Println("Usage: ")
-	for k, v := range ArgsOptions { 
+	for k, v := range ArgsOptions {
 		fmt.Printf("%15s | %s (%d args)\n", k, v.Description, v.Argc)
 	}
 	os.Exit(1)
@@ -137,7 +137,7 @@ func main() {
 		if ok {
 			max := i + pair.Argc + 1
 			if max < Argc {
-				args := os.Args[i + 1:max]
+				args := os.Args[i+1 : max]
 				pair.Callback(args...)
 				i = max - 1
 			} else {
@@ -147,7 +147,7 @@ func main() {
 			badarg(arg)
 		}
 	}
-	filepath := string(os.Args[Argc - 1])
+	filepath := string(os.Args[Argc-1])
 	if filepath == "--help" || filepath == "-h" {
 		usage()
 	}
