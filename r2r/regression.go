@@ -113,6 +113,7 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 		}
 		return result
 	}
+	defer instance.Close()
 	if test.Commands != nil {
 		var buffer bytes.Buffer
 		for _, command := range test.Commands {
@@ -120,7 +121,6 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 				continue
 			}
 			output, err := instance.Cmd(command)
-			fmt.Println("Got: " + output)
 			if err != nil {
 				result.Message = fmt.Sprintf("Error: %s", err.Error())
 				result.Success = false
@@ -147,7 +147,5 @@ func (test R2Test) Exec(options *TestsOptions) *TestResult {
 		result.Print(true)
 	}
 
-	defer instance.Close()
-	fmt.Println("It's done jim.")
 	return result
 }
