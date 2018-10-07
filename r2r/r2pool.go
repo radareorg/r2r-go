@@ -70,17 +70,20 @@ func (pool R2Pool) PerformTests(regressions *R2RegressionTest) bool {
 		pool.Tests <- &tests[index]
 	}
 
-	pool.Options.Println("Poolsize:", pool.Options.Jobs)
-
-	for i := 0; i < pool.Options.Jobs; i++ {
-		go R2Routine(&pool, done)
+	if pool.Options.Jobs > 1 {
+		pool.Options.Println("Poolsize:", pool.Options.Jobs)
+		for i := 0; i < pool.Options.Jobs; i++ {
+			go R2Routine(&pool, done)
+			pool.Options.Println("Waiting end of tests...")
+			for i := 0; i < pool.Options.Jobs; i++ {
+				<-done
+			}
+		}
+	} else {
+		pool.Options.Println("single-thread mode")
+		R2Routine(&pool, done)
 	}
 
-	pool.Options.Println("Waiting end of tests...")
-
-	for i := 0; i < pool.Options.Jobs; i++ {
-		<-done
-	}
 	for i := 0; i < length; i++ {
 		result := <-pool.Results
 		if !pool.Options.Sequence {
